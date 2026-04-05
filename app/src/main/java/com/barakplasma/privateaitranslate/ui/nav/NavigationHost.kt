@@ -1,0 +1,54 @@
+/*
+ * Copyright (c) 2023 You Apps
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package com.barakplasma.privateaitranslate.ui.nav
+
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import com.barakplasma.privateaitranslate.R
+import com.barakplasma.privateaitranslate.db.obj.HistoryItemType
+import com.barakplasma.privateaitranslate.ui.models.TranslationModel
+import com.barakplasma.privateaitranslate.ui.screens.HistoryScreen
+import com.barakplasma.privateaitranslate.ui.screens.SettingsScreen
+import com.barakplasma.privateaitranslate.ui.screens.TranslationPage
+import com.barakplasma.privateaitranslate.ui.views.AboutPage
+
+@Composable
+fun NavigationHost(
+    navController: NavHostController,
+    translationModel: TranslationModel
+) {
+    NavHost(navController = navController, Destination.Translate.route) {
+        composable(Destination.Translate.route) {
+            TranslationPage(navController, translationModel)
+        }
+        composable(Destination.History.route) {
+            HistoryScreen(navController, translationModel, HistoryItemType.HISTORY, R.string.history, R.string.clear_history)
+        }
+        composable(Destination.Favorites.route) {
+            HistoryScreen(navController, translationModel, HistoryItemType.FAVORITE, R.string.favorites, R.string.clear_favorites)
+        }
+        composable(Destination.Settings.route) {
+            SettingsScreen(navController)
+        }
+        composable(Destination.About.route) {
+            AboutPage(navController)
+        }
+    }
+}

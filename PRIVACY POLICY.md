@@ -1,17 +1,17 @@
 ## Introduction
-This privacy policy covers the use of the 'LocalTranslate' (https://github.com/LocalTranslate Contributor/TranslateYou) Android application.
+This privacy policy covers the use of the 'Private AI Translate' (https://github.com/Private AI Translate Contributor/TranslateYou) Android application.
 
-It may not be applicable to other software developed or released by LocalTranslate Contributor (https://github.com/LocalTranslate Contributor).
+It may not be applicable to other software developed or released by Private AI Translate Contributor (https://github.com/Private AI Translate Contributor).
 
-LocalTranslate was built as a free and open source application. Is provided free of charge and is intended for use as is.
+Private AI Translate was built as a free and open source application. Is provided free of charge and is intended for use as is.
 
 ## Data we collect
-LocalTranslate when running does not collect any statistics, personal information or analytics from its users, other than Android operating system built in mechanisms that are present for all mobile applications.
+Private AI Translate when running does not collect any statistics, personal information or analytics from its users, other than Android operating system built in mechanisms that are present for all mobile applications.
 
-LocalTranslate does not contain any advertising sdk, nor tracker of the user or his device.
+Private AI Translate does not contain any advertising sdk, nor tracker of the user or his device.
 
 ### History
-LocalTranslate can, at the explicit request of the user, keep a history of translations retrieved from different translation services. This history is stored locally without ever being shared, whether with a third-party service or with developers.
+Private AI Translate can, at the explicit request of the user, keep a history of translations retrieved from different translation services. This history is stored locally without ever being shared, whether with a third-party service or with developers.
 
 ### Cookies
 Cookies are not stored at any point. api key and/or authentication credentials can be stored optionally on the user's local device upon the user's explicit request. Developer does not have access to any such information.
@@ -20,7 +20,7 @@ Cookies are not stored at any point. api key and/or authentication credentials c
 ## Third party cloud service dependencies
 **Data collected by others**
 
-Use of LocalTranslate may result in one or more of the following third party organisations may collecting data from you. Please check their privacy policy for more information:
+Use of Private AI Translate may result in one or more of the following third party organisations may collecting data from you. Please check their privacy policy for more information:
 
 ### Application Store
 * IzzyOnDroid, store where the app is published - https://android.izzysoft.de/help?topic=adverts
@@ -43,6 +43,6 @@ _You can choose the Lingva Translate instance according to your preference._
 * Apertium, open source - https://github.com/apertium
 
 ## Android permissions requested by the application
-Note that 'LocalTranslate' application requires android platform permissions:
+Note that 'Private AI Translate' application requires android platform permissions:
 `android.permission.INTERNET` - In order to perform requests to online translation engines.
 `android.permission.RECORD_AUDIO` - In order to perform a vocal translation, **only at the user's request**.

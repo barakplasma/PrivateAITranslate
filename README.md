@@ -1,15 +1,15 @@
 <!-- ---------- Header ---------- -->
 <div align="center">
   <img width="200" height="200" src="fastlane/metadata/android/en-US/images/icon.png">
-  <h1>LocalTranslate</h1>
+  <h1>Private AI Translate</h1>
 <p>Privacy-focused translator app with on-device AI by default.</p>
 
 <!-- ---------- Badges ---------- -->
   <div align="center">
-    <img alt="License" src="https://img.shields.io/github/license/barakplasma/LocalTranslate?color=c3e7ff&style=flat-square">
-    <img alt="Last commit" src="https://img.shields.io/github/last-commit/barakplasma/LocalTranslate?color=c3e7ff&style=flat-square">
-    <img alt="Repo size" src="https://img.shields.io/github/repo-size/barakplasma/LocalTranslate?color=c3e7ff&style=flat-square">
-    <img alt="Stars" src="https://img.shields.io/github/stars/barakplasma/LocalTranslate?color=c3e7ff&style=flat-square">
+    <img alt="License" src="https://img.shields.io/github/license/barakplasma/Private AI Translate?color=c3e7ff&style=flat-square">
+    <img alt="Last commit" src="https://img.shields.io/github/last-commit/barakplasma/Private AI Translate?color=c3e7ff&style=flat-square">
+    <img alt="Repo size" src="https://img.shields.io/github/repo-size/barakplasma/Private AI Translate?color=c3e7ff&style=flat-square">
+    <img alt="Stars" src="https://img.shields.io/github/stars/barakplasma/Private AI Translate?color=c3e7ff&style=flat-square">
     <br>
 </div>
 </div>
@@ -17,7 +17,7 @@
 <!-- ---------- Description ---------- -->
 ## About this fork
 
-**LocalTranslate** is a fork of the excellent [**TranslateYou**](https://github.com/you-apps/TranslateYou) by [**you-apps**](https://github.com/you-apps). 
+**Private AI Translate** is a fork of the excellent [**TranslateYou**](https://github.com/you-apps/TranslateYou) by [**you-apps**](https://github.com/you-apps). 
 
 This fork was created to:
 1.  **Prioritize On-Device Translation**: It makes **on-device LLM translation** (via Gemini Nano) the default engine for maximum privacy and offline capability.
@@ -41,7 +41,7 @@ This fork was created to:
 <!-- ---------- Download ---------- -->
 ## Download
 
-Download the latest release from the [**GitHub Releases**](https://github.com/barakplasma/LocalTranslate/releases) page.
+Download the latest release from the [**GitHub Releases**](https://github.com/barakplasma/Private AI Translate/releases) page.
 
 <!-- ---------- Supported translation engines ---------- -->
 ## Supported translation engines
@@ -83,13 +83,13 @@ Download the latest release from the [**GitHub Releases**](https://github.com/ba
 ## Feedback and contributions
 ***All contributions are very welcome!***
 
-* Bug reports and feature requests for this fork can be submitted [here](https://github.com/barakplasma/LocalTranslate/issues).
+* Bug reports and feature requests for this fork can be submitted [here](https://github.com/barakplasma/Private AI Translate/issues).
 * If you wish to contribute, please **fork** the project and submit a [**pull request**](https://help.github.com/articles/about-pull-requests/).
 
 <!-- ---------- Privacy Policy and License ---------- -->
 ## Privacy Policy
 
-**LocalTranslate's privacy policy is available** [**here**](https://github.com/barakplasma/LocalTranslate/blob/master/PRIVACY%20POLICY.md)
+**Private AI Translate's privacy policy is available** [**here**](https://github.com/barakplasma/Private AI Translate/blob/master/PRIVACY%20POLICY.md)
 
 ## Credits
 * Originally developed by [**you-apps**](https://github.com/you-apps) (TranslateYou).
@@ -97,4 +97,4 @@ Download the latest release from the [**GitHub Releases**](https://github.com/ba
 
 ## License
 
-LocalTranslate is licensed under the [**GNU General Public License**](https://www.gnu.org/licenses/gpl.html).
+Private AI Translate is licensed under the [**GNU General Public License**](https://www.gnu.org/licenses/gpl.html).

@@ -12,7 +12,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.barakplasma.localtranslate.local"
+        applicationId = "com.barakplasma.privateaitranslate.local"
         minSdk = 26
         targetSdk = 35
         versionCode = 55
@@ -58,7 +58,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    namespace = "com.barakplasma.localtranslate.local"
+    namespace = "com.barakplasma.privateaitranslate.local"
 }
 
 dependencies {
