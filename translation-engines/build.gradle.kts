@@ -20,5 +20,4 @@ dependencies {
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
     implementation("com.squareup.retrofit2:converter-scalars:3.0.0")
     // retrofit:3.0.0 based on okhttp3:4.12.0
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }

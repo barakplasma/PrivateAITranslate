@@ -90,7 +90,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
     // retrofit:3.0.0 based on okhttp3:4.12.0
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     // Room database
     implementation("androidx.room:room-ktx:2.7.2")

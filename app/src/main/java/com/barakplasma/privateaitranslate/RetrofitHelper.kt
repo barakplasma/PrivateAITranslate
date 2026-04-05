@@ -21,7 +21,6 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import net.youapps.translation_engines.JsonHelper
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 
 object RetrofitHelper {
@@ -29,11 +28,6 @@ object RetrofitHelper {
 
     inline fun <reified T> createInstance(baseUrl: String): T {
         val httpClient = OkHttpClient.Builder()
-
-        val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }
-        httpClient.addInterceptor(logging) // <-- this is the important line!
 
         return Retrofit.Builder()
             .baseUrl(baseUrl)

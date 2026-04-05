@@ -25,6 +25,21 @@
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="33">
 
+        <!-- Disable ML Kit data collection -->
+        <meta-data
+            android:name="com.google.mlkit.data_collection_enabled"
+            android:value="false" />
+
+        <!-- Disable Google Analytics collection -->
+        <meta-data
+            android:name="firebase_analytics_collection_enabled"
+            android:value="false" />
+
+        <!-- Disable Google Measurement -->
+        <meta-data
+            android:name="google_analytics_adid_collection_enabled"
+            android:value="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
