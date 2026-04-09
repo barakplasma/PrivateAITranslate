@@ -119,7 +119,8 @@ dependencies {
     implementation("com.google.mlkit:genai-prompt:1.0.0-beta1")
 
     // LiteRT-LM for on-device TranslateGemma inference
-    implementation("com.google.ai.edge.litertlm:litertlm-android:0.10.1")
+    // Use latest.release as recommended by the official docs (no pinned version published to Google Maven)
+    implementation("com.google.ai.edge.litertlm:litertlm-android:latest.release")
 
     // ML Kit Translation
     implementation("com.google.mlkit:translate:17.0.3")

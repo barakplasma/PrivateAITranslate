@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import com.barakplasma.privateaitranslate.ui.components.SearchAppBar
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
@@ -68,7 +69,7 @@ fun TranslateGemmaSettings(
     FullscreenDialog(
         onDismissRequest = onDismissRequest,
         topBar = {
-            com.barakplasma.privateaitranslate.ui.components.SearchAppBar(
+            SearchAppBar(
                 title = stringResource(R.string.translategemma_title),
                 value = "",
                 onValueChange = {},
