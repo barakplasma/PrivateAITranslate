@@ -3,6 +3,7 @@ package com.barakplasma.privateaitranslate.util
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import com.barakplasma.privateaitranslate.BuildConfig
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
