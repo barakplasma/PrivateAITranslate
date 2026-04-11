@@ -160,7 +160,8 @@ class TranslateGemmaEngine(
         }
     }
 
-    private synchronized fun getOrCreateEngine(): Engine {
+    @Synchronized
+    private fun getOrCreateEngine(): Engine {
         liveEngine?.let { return it }
 
         val modelFile = getModelFile(appContext)
