@@ -44,7 +44,7 @@ class TranslateGemmaEngine(
     override val autoLanguageCode = "auto"
     override val supportsAudio = false
     override val isOnDevice = true
-    override val supportedModels = listOf("CPU", "GPU", "TPU", "NPU")
+    override val supportedModels = listOf("CPU", "GPU")
 
     private var liveEngine: Engine? = null
     private var backendAvailability: MutableMap<String, Boolean?> = mutableMapOf()
@@ -69,14 +69,6 @@ class TranslateGemmaEngine(
             when (backendName) {
                 "GPU" -> {
                     Backend.GPU()
-                    true
-                }
-                "TPU" -> {
-                    Backend.TPU()
-                    true
-                }
-                "NPU" -> {
-                    Backend.NPU()
                     true
                 }
                 else -> {
@@ -107,8 +99,6 @@ class TranslateGemmaEngine(
             try {
                 val backend = when (selectedBackend) {
                     "GPU" -> Backend.GPU()
-                    "TPU" -> Backend.TPU()
-                    "NPU" -> Backend.NPU()
                     else -> Backend.CPU()
                 }
                 CrashLogger.i(TAG, "Using selected backend: $selectedBackend")
@@ -118,8 +108,8 @@ class TranslateGemmaEngine(
             }
         }
 
-        // Fallback chain: TPU → GPU → NPU → CPU
-        val fallbackChain = listOf("TPU", "GPU", "NPU", "CPU")
+        // Fallback chain: GPU → CPU
+        val fallbackChain = listOf("GPU", "CPU")
         for (backendName in fallbackChain) {
             if (backendName == selectedBackend) continue // Already tried
 
@@ -127,8 +117,6 @@ class TranslateGemmaEngine(
                 try {
                     val backend = when (backendName) {
                         "GPU" -> Backend.GPU()
-                        "TPU" -> Backend.TPU()
-                        "NPU" -> Backend.NPU()
                         else -> Backend.CPU()
                     }
                     CrashLogger.w(TAG, "Falling back from '$selectedBackend' to '$backendName'")
