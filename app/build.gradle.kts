@@ -1,9 +1,8 @@
 plugins {
     id("com.android.application") version "9.1.0"
-    id("org.jetbrains.kotlin.android") version "1.9.24"
-    id("org.jetbrains.kotlin.plugin.compose") version "1.9.24"
-    id("com.google.devtools.ksp") version "1.9.24-1.0.20"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.24"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.3.20"
+    id("com.google.devtools.ksp") version "2.3.20-1.0.24"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.20"
 }
 
 android {
