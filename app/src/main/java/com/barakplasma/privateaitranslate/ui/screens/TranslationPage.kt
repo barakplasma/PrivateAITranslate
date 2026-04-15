@@ -145,7 +145,7 @@ fun TranslationPage(
                     val result = snackbarHostState.showSnackbar(
                         message = errorMessage,
                         actionLabel = context.getString(R.string.options),
-                        duration = SnackbarDuration.Short
+                        duration = SnackbarDuration.Long
                     )
                     when (result) {
                         SnackbarResult.ActionPerformed -> navHostController.navigate(Destination.Settings.route)

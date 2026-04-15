@@ -63,7 +63,7 @@ class TranslationModel : ViewModel() {
     var availableLanguages: List<Language> by mutableStateOf(emptyList())
 
     var sourceLanguage by mutableStateOf(
-        getLanguageByPrefKey(Preferences.sourceLanguage) ?: Language("", "Auto")
+        getLanguageByPrefKey(Preferences.sourceLanguage) ?: Language("he", "Hebrew")
     )
 
     var targetLanguage by mutableStateOf(
