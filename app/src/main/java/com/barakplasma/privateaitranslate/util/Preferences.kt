@@ -38,6 +38,7 @@ object Preferences {
     const val tessLanguageKey = "tessLanguage"
 
     const val highSecurityModeKey = "highSecurityMode"
+    const val sendCrashReportsKey = "sendCrashReports"
 
     const val themeModeKey = "themeModeKey"
     const val accentColorKey = "accentColor"

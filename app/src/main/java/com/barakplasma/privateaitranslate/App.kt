@@ -33,13 +33,21 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        Preferences.initialize(this)
+
         initializeSentry()
 
         CrashLogger.init(this)
 
-        Preferences.initialize(
-            this
-        )
+        // Disable crash reporting in high security mode or on-device only mode
+        if (BuildConfig.ON_DEVICE_ONLY) {
+            Preferences.put(Preferences.sendCrashReportsKey, false)
+        } else {
+            val highSecurityMode = Preferences.get(Preferences.highSecurityModeKey, false)
+            if (highSecurityMode) {
+                Preferences.put(Preferences.sendCrashReportsKey, false)
+            }
+        }
 
         DatabaseHolder().initDb(
             this

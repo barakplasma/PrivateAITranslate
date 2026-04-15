@@ -41,7 +41,9 @@ object CrashLogger {
             }
             val crashLog = sw.toString()
             appendLog(crashLog)
-            Sentry.captureException(throwable)
+            if (isCrashReportingEnabled()) {
+                Sentry.captureException(throwable)
+            }
             defaultHandler?.uncaughtException(thread, throwable)
         }
     }
@@ -50,10 +52,12 @@ object CrashLogger {
         Log.e(tag, msg, throwable)
         val entry = buildEntry("E", tag, msg, throwable)
         appendLog(entry)
-        if (throwable != null) {
-            Sentry.captureException(throwable)
-        } else {
-            Sentry.captureMessage(msg, SentryLevel.ERROR)
+        if (isCrashReportingEnabled()) {
+            if (throwable != null) {
+                Sentry.captureException(throwable)
+            } else {
+                Sentry.captureMessage(msg, SentryLevel.ERROR)
+            }
         }
     }
 
@@ -61,10 +65,12 @@ object CrashLogger {
         Log.w(tag, msg, throwable)
         val entry = buildEntry("W", tag, msg, throwable)
         appendLog(entry)
-        if (throwable != null) {
-            Sentry.captureException(throwable)
-        } else {
-            Sentry.captureMessage(msg, SentryLevel.WARNING)
+        if (isCrashReportingEnabled()) {
+            if (throwable != null) {
+                Sentry.captureException(throwable)
+            } else {
+                Sentry.captureMessage(msg, SentryLevel.WARNING)
+            }
         }
     }
 
@@ -72,7 +78,9 @@ object CrashLogger {
         Log.i(tag, msg)
         val entry = buildEntry("I", tag, msg)
         appendLog(entry)
-        Sentry.captureMessage(msg, SentryLevel.INFO)
+        if (isCrashReportingEnabled()) {
+            Sentry.captureMessage(msg, SentryLevel.INFO)
+        }
     }
 
     fun readLog(): String {
@@ -90,6 +98,10 @@ object CrashLogger {
     }
 
     fun sendLogsToSentry() {
+        if (!isCrashReportingEnabled()) {
+            Log.i(TAG, "Crash reporting is disabled, logs not sent")
+            return
+        }
         val logs = readLog()
         if (logs.isBlank()) {
             Log.i(TAG, "Log file is empty, nothing to send to Sentry")
@@ -99,11 +111,6 @@ object CrashLogger {
             Sentry.captureMessage("Local crash logs:\n$logs", SentryLevel.INFO)
             Log.i(TAG, "Crash logs sent to Sentry")
         }.start()
-    }
-
-    @Deprecated("Use sendLogsToSentry() instead", replaceWith = ReplaceWith("sendLogsToSentry()"))
-    fun sendLogsToNtfy() {
-        sendLogsToSentry()
     }
 
     private fun buildEntry(level: String, tag: String, msg: String, throwable: Throwable? = null): String {
@@ -133,5 +140,10 @@ object CrashLogger {
 
     private fun isoNow(): String {
         return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
+    }
+
+    private fun isCrashReportingEnabled(): Boolean {
+        // Default to true (crash reporting enabled by default)
+        return Preferences.get(Preferences.sendCrashReportsKey, true)
     }
 }
