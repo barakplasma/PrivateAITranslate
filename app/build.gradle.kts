@@ -2,7 +2,6 @@ plugins {
     id("com.android.application") version "9.1.0"
     id("org.jetbrains.kotlin.plugin.compose") version "2.3.20"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.3.20"
-    id("org.jetbrains.kotlin.kapt") version "2.3.20"
 }
 
 android {
@@ -18,12 +17,6 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
-        }
-    }
-
-    kapt {
-        arguments {
-            arg("room.schemaLocation", "$projectDir/schemas")
         }
     }
 
@@ -108,7 +101,7 @@ dependencies {
 
     // Room database
     implementation("androidx.room:room-ktx:2.7.2")
-    kapt("androidx.room:room-compiler:2.7.2")
+    annotationProcessor("androidx.room:room-compiler:2.7.2")
 
     // Tesseract OCR
     implementation("cz.adaptech.tesseract4android:tesseract4android-openmp:4.9.0")
