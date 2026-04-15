@@ -4,20 +4,18 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import com.barakplasma.privateaitranslate.BuildConfig
+import io.sentry.Sentry
+import io.sentry.SentryLevel
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.net.HttpURLConnection
-import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 object CrashLogger {
     private const val TAG = "CrashLogger"
-    private const val NTFY_TOPIC = "privateaitranslate-crash"
-    private const val NTFY_URL = "https://ntfy.sh/$NTFY_TOPIC"
     private const val LOG_FILE = "crashlog.txt"
     private const val MAX_LOG_SIZE = 256 * 1024
 
@@ -43,7 +41,7 @@ object CrashLogger {
             }
             val crashLog = sw.toString()
             appendLog(crashLog)
-            postToNtfy("CRASH", crashLog, highPriority = true)
+            Sentry.captureException(throwable)
             defaultHandler?.uncaughtException(thread, throwable)
         }
     }
@@ -52,18 +50,29 @@ object CrashLogger {
         Log.e(tag, msg, throwable)
         val entry = buildEntry("E", tag, msg, throwable)
         appendLog(entry)
+        if (throwable != null) {
+            Sentry.captureException(throwable)
+        } else {
+            Sentry.captureMessage(msg, SentryLevel.ERROR)
+        }
     }
 
     fun w(tag: String, msg: String, throwable: Throwable? = null) {
         Log.w(tag, msg, throwable)
         val entry = buildEntry("W", tag, msg, throwable)
         appendLog(entry)
+        if (throwable != null) {
+            Sentry.captureException(throwable)
+        } else {
+            Sentry.captureMessage(msg, SentryLevel.WARNING)
+        }
     }
 
     fun i(tag: String, msg: String) {
         Log.i(tag, msg)
         val entry = buildEntry("I", tag, msg)
         appendLog(entry)
+        Sentry.captureMessage(msg, SentryLevel.INFO)
     }
 
     fun readLog(): String {
@@ -80,17 +89,21 @@ object CrashLogger {
         } catch (_: Exception) {}
     }
 
-    fun sendLogsToNtfy() {
+    fun sendLogsToSentry() {
         val logs = readLog()
         if (logs.isBlank()) {
-            val emptyMsg = "${isoNow()} I/CrashLogger: Log file is empty, nothing to send"
-            Thread { postToNtfy("LOGS", emptyMsg, highPriority = false) }.start()
+            Log.i(TAG, "Log file is empty, nothing to send to Sentry")
             return
         }
         Thread {
-            val result = postToNtfy("LOGS", logs, highPriority = false)
-            Log.i(TAG, "ntfy send result: $result")
+            Sentry.captureMessage("Local crash logs:\n$logs", SentryLevel.INFO)
+            Log.i(TAG, "Crash logs sent to Sentry")
         }.start()
+    }
+
+    @Deprecated("Use sendLogsToSentry() instead", replaceWith = ReplaceWith("sendLogsToSentry()"))
+    fun sendLogsToNtfy() {
+        sendLogsToSentry()
     }
 
     private fun buildEntry(level: String, tag: String, msg: String, throwable: Throwable? = null): String {
@@ -116,28 +129,6 @@ object CrashLogger {
                 fos.fd.sync()
             }
         } catch (_: Exception) {}
-    }
-
-    private fun postToNtfy(title: String, body: String, highPriority: Boolean): Int {
-        return try {
-            val conn = URL(NTFY_URL).openConnection() as HttpURLConnection
-            conn.requestMethod = "POST"
-            conn.doOutput = true
-            conn.setRequestProperty("Title", "PrivateAI $title")
-            conn.setRequestProperty("Tags", if (highPriority) "rotating_light" else "memo")
-            if (highPriority) {
-                conn.setRequestProperty("Priority", "high")
-            }
-            conn.setRequestProperty("Click", "https://github.com/barakplasma/TranslateYou")
-            val payload = if (body.length > 4000) body.take(4000) + "\n...truncated" else body
-            conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
-            val code = conn.responseCode
-            conn.disconnect()
-            code
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to post to ntfy: ${e.message}")
-            -1
-        }
     }
 
     private fun isoNow(): String {

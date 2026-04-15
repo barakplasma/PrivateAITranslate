@@ -124,4 +124,7 @@ dependencies {
     // ML Kit Translation
     implementation("com.google.mlkit:translate:17.0.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
+
+    // Sentry for crash reporting
+    implementation("io.sentry:sentry-android-core:7.14.0")
 }
