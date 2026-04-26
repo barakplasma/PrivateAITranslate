@@ -69,7 +69,11 @@ class App : Application() {
             add("MLKit" to { MLKitEngine(settingsProvider) })
             add("TranslateGemma" to { TranslateGemmaEngine(settingsProvider, this@App) })
             if (!BuildConfig.ON_DEVICE_ONLY) {
-                addAll(TranslationEngines.getAllEngines(settingsProvider).map { it.name to { it } })
+                try {
+                    addAll(TranslationEngines.getAllEngines(settingsProvider).map { it.name to { it } })
+                } catch (t: Throwable) {
+                    CrashLogger.e("App", "Failed to load additional engines: ${t.message}", t)
+                }
             }
         }
         for ((label, factory) in factories) {
