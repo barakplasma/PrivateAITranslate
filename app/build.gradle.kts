@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -46,6 +47,10 @@ android {
             buildConfigField("Boolean", "ON_DEVICE_ONLY", "true")
             versionNameSuffix = "-offline"
         }
+    }
+
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
     }
 
     compileOptions {
@@ -101,7 +106,7 @@ dependencies {
 
     // Room database
     implementation("androidx.room:room-ktx:2.7.2")
-    annotationProcessor("androidx.room:room-compiler:2.7.2")
+    ksp("androidx.room:room-compiler:2.7.2")
 
     // Tesseract OCR
     implementation("cz.adaptech.tesseract4android:tesseract4android-openmp:4.9.0")
