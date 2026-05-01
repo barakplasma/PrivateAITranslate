@@ -48,6 +48,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.barakplasma.privateaitranslate.engine.TranslateGemmaEngine
 import net.youapps.translation_engines.Language
 import net.youapps.translation_engines.Translation
 import net.youapps.translation_engines.TranslationEngine
@@ -176,12 +177,17 @@ class TranslationModel : ViewModel() {
             .associate { it.name to Translation("") }
 
         viewModelScope.launch(Dispatchers.IO) {
+            val textToTranslate = insertedText
+            val sourceCode = sourceLanguage.code
+            val targetCode = targetLanguage.code
+            val currentEngine = engine
+
             val translation = try {
-                engine.translate(
-                    insertedText,
-                    sourceLanguage.code,
-                    targetLanguage.code
-                )
+                if (currentEngine is TranslateGemmaEngine && textToTranslate.length > TranslateGemmaEngine.MAX_INPUT_CHARS) {
+                    translateGemmaChunked(currentEngine, textToTranslate, sourceCode, targetCode)
+                } else {
+                    currentEngine.translate(textToTranslate, sourceCode, targetCode)
+                }
             } catch (e: Exception) {
                 Log.e("error", e.message.toString())
                 _apiError.emit(e)
@@ -190,16 +196,39 @@ class TranslationModel : ViewModel() {
             }
             translating = false
 
-            if (insertedText.isNotEmpty()) {
+            if (textToTranslate.isNotEmpty()) {
                 this@TranslationModel.translation = translation
                 translatedTexts = translatedTexts.toMutableMap().also {
-                    it[engine.name] = translation
+                    it[currentEngine.name] = translation
                 }.toMap()
                 saveToHistory()
             }
         }
 
         if (simTranslationEnabled) simTranslation()
+    }
+
+    private suspend fun translateGemmaChunked(
+        gemmaEngine: TranslateGemmaEngine,
+        text: String,
+        source: String,
+        target: String
+    ): Translation {
+        val chunks = TranslateGemmaEngine.splitIntoChunks(text)
+        val accumulated = StringBuilder()
+
+        for (chunk in chunks) {
+            val chunkResult = gemmaEngine.translate(chunk, source, target)
+            if (accumulated.isNotEmpty() && !accumulated.endsWith("\n")) accumulated.append(" ")
+            accumulated.append(chunkResult.translatedText)
+
+            val partialText = accumulated.toString().trim()
+            translatedTexts = translatedTexts.toMutableMap().also {
+                it[gemmaEngine.name] = Translation(translatedText = partialText)
+            }.toMap()
+        }
+
+        return Translation(translatedText = accumulated.toString().trim())
     }
 
     private fun simTranslation() = viewModelScope.launch(Dispatchers.IO) {

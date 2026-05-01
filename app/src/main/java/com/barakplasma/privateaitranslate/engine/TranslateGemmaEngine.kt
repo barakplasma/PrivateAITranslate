@@ -21,8 +21,10 @@ import android.content.Context
 import android.os.Build
 import com.barakplasma.privateaitranslate.util.CrashLogger
 import com.google.ai.edge.litertlm.Backend
+import com.google.ai.edge.litertlm.ConversationConfig
 import com.google.ai.edge.litertlm.Engine
 import com.google.ai.edge.litertlm.EngineConfig
+import com.google.ai.edge.litertlm.SamplerConfig
 import kotlinx.coroutines.flow.collect
 import net.youapps.translation_engines.ApiKeyState
 import net.youapps.translation_engines.EngineSettingsProvider
@@ -30,6 +32,7 @@ import net.youapps.translation_engines.Language
 import net.youapps.translation_engines.Translation
 import net.youapps.translation_engines.TranslationEngine
 import java.io.File
+import java.text.BreakIterator
 
 private const val TAG = "TranslateGemma"
 
@@ -177,7 +180,11 @@ class TranslateGemmaEngine(
 
         return try {
             val sb = StringBuilder()
-            val conversation = engine.createConversation()
+            val maxOutputChars = (query.length * 6).coerceAtLeast(200)
+            val convConfig = ConversationConfig(
+                samplerConfig = SamplerConfig(topK = 40, topP = 0.95, temperature = 0.1)
+            )
+            val conversation = engine.createConversation(convConfig)
 
             conversation.use { conv ->
                 val flow = conv.sendMessageAsync(prompt)
@@ -185,7 +192,7 @@ class TranslateGemmaEngine(
                 flow.collect { chunk ->
                     chunk?.let {
                         try {
-                            sb.append(it)
+                            if (sb.length < maxOutputChars) sb.append(it)
                         } catch (e: Exception) {
                             CrashLogger.w(TAG, "Failed to append chunk: ${e.message}", e)
                         }
@@ -214,9 +221,45 @@ class TranslateGemmaEngine(
         const val MODEL_SIZE_BYTES = 2_000_000_000L
         const val MODEL_DOWNLOAD_URL =
             "https://huggingface.co/barakplasma/translategemma-4b-it-android-task-quantized/resolve/main/artifacts/int4-generic/translategemma-4b-it-int4-generic.litertlm"
+        const val MAX_INPUT_CHARS = 1000
 
         fun getModelFile(context: Context): File =
             File(context.getExternalFilesDir(null), "$MODEL_DIR/$MODEL_FILENAME")
+
+        fun splitIntoChunks(text: String, maxCharsPerChunk: Int = MAX_INPUT_CHARS): List<String> {
+            if (text.length <= maxCharsPerChunk) return listOf(text)
+
+            val bi = BreakIterator.getSentenceInstance()
+            bi.setText(text)
+
+            val chunks = mutableListOf<String>()
+            val current = StringBuilder()
+            var sentenceStart = 0
+            var boundary = bi.next()
+
+            while (boundary != BreakIterator.DONE) {
+                val sentence = text.substring(sentenceStart, boundary)
+                if (current.length + sentence.length > maxCharsPerChunk && current.isNotEmpty()) {
+                    chunks.add(current.toString().trim())
+                    current.clear()
+                }
+                if (sentence.length > maxCharsPerChunk) {
+                    // Single sentence too long — hard-split
+                    var s = 0
+                    while (s < sentence.length) {
+                        chunks.add(sentence.substring(s, minOf(s + maxCharsPerChunk, sentence.length)).trim())
+                        s += maxCharsPerChunk
+                    }
+                } else {
+                    current.append(sentence)
+                }
+                sentenceStart = boundary
+                boundary = bi.next()
+            }
+
+            if (current.isNotEmpty()) chunks.add(current.toString().trim())
+            return chunks.filter { it.isNotBlank() }
+        }
 
         private val SUPPORTED_LANGUAGES = listOf(
             Language("af", "Afrikaans"),
