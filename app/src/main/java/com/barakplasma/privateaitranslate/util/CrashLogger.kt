@@ -66,12 +66,10 @@ object CrashLogger {
         Log.w(tag, msg, throwable)
         val entry = buildEntry("W", tag, msg, throwable)
         appendLog(entry)
+        // Warnings go to Sentry as breadcrumbs, not standalone issues.
+        // They'll be attached to the next captured error for context.
         if (isCrashReportingEnabled()) {
-            if (throwable != null) {
-                Sentry.captureException(throwable)
-            } else {
-                Sentry.captureMessage(msg, SentryLevel.WARNING)
-            }
+            Sentry.addBreadcrumb("$tag: $msg")
         }
     }
 
@@ -79,8 +77,9 @@ object CrashLogger {
         Log.i(tag, msg)
         val entry = buildEntry("I", tag, msg)
         appendLog(entry)
+        // Info messages go to Sentry as breadcrumbs, not standalone issues.
         if (isCrashReportingEnabled()) {
-            Sentry.captureMessage(msg, SentryLevel.INFO)
+            Sentry.addBreadcrumb("$tag: $msg")
         }
     }
 
@@ -109,7 +108,7 @@ object CrashLogger {
             return
         }
         Thread {
-            Sentry.captureMessage("Local crash logs:\n$logs", SentryLevel.INFO)
+            Sentry.captureMessage("Local crash logs:\n$logs", SentryLevel.ERROR)
             Log.i(TAG, "Crash logs sent to Sentry")
         }.start()
     }
