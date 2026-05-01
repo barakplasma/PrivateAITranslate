@@ -25,6 +25,15 @@
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="33">
 
+        <!-- Sentry: auto-initialize before App.onCreate() via SentryInitProvider ContentProvider.
+             This ensures crashes that happen during App.onCreate() are captured even if they
+             occur before the manual SentryAndroid.init() call. -->
+        <meta-data android:name="io.sentry.dsn" android:value="https://c270c03278e541f4ad537702fec77b1e@barakplasma.bugsink.com/1" />
+        <meta-data android:name="io.sentry.sample-rate" android:value="1.0" />
+        <meta-data android:name="io.sentry.attach-screenshot" android:value="false" />
+        <meta-data android:name="io.sentry.send-default-pii" android:value="false" />
+        <meta-data android:name="io.sentry.max-breadcrumbs" android:value="50" />
+
         <!-- Disable ML Kit data collection -->
         <meta-data
             android:name="com.google.mlkit.data_collection_enabled"

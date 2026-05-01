@@ -93,48 +93,30 @@ class TranslateGemmaEngine(
 
     private fun getBackendWithFallback(): Pair<String, Backend> {
         val selectedBackend = getSelectedModel() ?: "CPU"
+        // Priority order: selected backend first, then the other.
+        // This ensures CPU is tried before GPU when CPU is selected (the default),
+        // preventing a fallthrough to GPU which causes SIGSEGV on unsupported devices.
+        val order = listOf(selectedBackend) + listOf("CPU", "GPU").filter { it != selectedBackend }
 
-        // Try selected backend first
-        if (selectedBackend != "CPU" && isBackendAvailable(selectedBackend)) {
+        for (backendName in order) {
+            if (!isBackendAvailable(backendName)) continue
             try {
-                val backend = when (selectedBackend) {
+                val backend = when (backendName) {
                     "GPU" -> Backend.GPU()
                     else -> Backend.CPU()
                 }
-                CrashLogger.i(TAG, "Using selected backend: $selectedBackend")
-                return Pair(selectedBackend, backend)
-            } catch (e: Exception) {
-                CrashLogger.w(TAG, "Failed to initialize selected backend '$selectedBackend': ${e.message}", e)
-            }
-        }
-
-        // Fallback chain: GPU → CPU
-        val fallbackChain = listOf("GPU", "CPU")
-        for (backendName in fallbackChain) {
-            if (backendName == selectedBackend) continue // Already tried
-
-            if (isBackendAvailable(backendName)) {
-                try {
-                    val backend = when (backendName) {
-                        "GPU" -> Backend.GPU()
-                        else -> Backend.CPU()
-                    }
+                if (backendName != selectedBackend) {
                     CrashLogger.w(TAG, "Falling back from '$selectedBackend' to '$backendName'")
-                    return Pair(backendName, backend)
-                } catch (e: Exception) {
-                    CrashLogger.w(TAG, "Fallback backend '$backendName' also failed: ${e.message}")
+                } else {
+                    CrashLogger.i(TAG, "Using selected backend: $backendName")
                 }
+                return Pair(backendName, backend)
+            } catch (e: Exception) {
+                CrashLogger.w(TAG, "Backend '$backendName' failed to create: ${e.message}", e)
             }
         }
 
-        // Last resort: Always use CPU
-        try {
-            CrashLogger.w(TAG, "All preferred backends failed, using CPU as last resort")
-            return Pair("CPU", Backend.CPU())
-        } catch (e: Exception) {
-            CrashLogger.e(TAG, "Critical: CPU backend also failed: ${e.message}", e)
-            throw IllegalStateException("All translation backends failed: ${e.message}", e)
-        }
+        throw IllegalStateException("All translation backends failed. Device may not support TranslateGemma.")
     }
 
     @Synchronized

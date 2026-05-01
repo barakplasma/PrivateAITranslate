@@ -27,14 +27,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
@@ -47,7 +51,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.barakplasma.privateaitranslate.R
 import com.barakplasma.privateaitranslate.ui.MainActivity
@@ -63,6 +69,7 @@ import com.barakplasma.privateaitranslate.ui.dialogs.EngineSelectionDialog
 import com.barakplasma.privateaitranslate.ui.views.EnginePref
 import com.barakplasma.privateaitranslate.ui.views.TessSettings
 import com.barakplasma.privateaitranslate.ui.views.TranslateGemmaSettings
+import com.barakplasma.privateaitranslate.util.CrashLogger
 import com.barakplasma.privateaitranslate.util.LocaleHelper
 import com.barakplasma.privateaitranslate.util.Preferences
 
@@ -102,6 +109,9 @@ fun SettingsScreen(
     var showTranslateGemmaSettings by remember {
         mutableStateOf(false)
     }
+
+    var showCrashLog by remember { mutableStateOf(false) }
+    var crashLogText by remember { mutableStateOf("") }
 
     Scaffold(
         modifier = Modifier
@@ -336,7 +346,55 @@ fun SettingsScreen(
                         .height(15.dp)
                 )
             }
+
+            item {
+                SettingsCategory(title = stringResource(R.string.diagnostics))
+
+                PreferenceItem(
+                    title = stringResource(R.string.crash_log),
+                    summary = stringResource(R.string.crash_log_summary)
+                ) {
+                    crashLogText = CrashLogger.readLog()
+                    showCrashLog = true
+                }
+
+                PreferenceItem(
+                    modifier = Modifier.padding(top = 10.dp),
+                    title = stringResource(R.string.send_logs),
+                    summary = stringResource(R.string.send_logs_summary)
+                ) {
+                    CrashLogger.sendLogsToSentry()
+                }
+
+                Spacer(modifier = Modifier.height(15.dp))
+            }
         }
+    }
+
+    if (showCrashLog) {
+        AlertDialog(
+            onDismissRequest = { showCrashLog = false },
+            title = { Text(stringResource(R.string.crash_log)) },
+            text = {
+                Text(
+                    text = crashLogText.ifBlank { stringResource(R.string.crash_log_empty) },
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 11.sp,
+                    modifier = Modifier.verticalScroll(rememberScrollState())
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    CrashLogger.clearLog()
+                    showCrashLog = false
+                }) { Text(stringResource(R.string.crash_log_clear)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCrashLog = false }) {
+                    Text(stringResource(R.string.close))
+                }
+            }
+        )
     }
 
     if (showEngineSelectDialog) {

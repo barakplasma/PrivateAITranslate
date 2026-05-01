@@ -28,11 +28,29 @@ import com.barakplasma.privateaitranslate.util.SpeechHelper
 import io.sentry.android.core.SentryAndroid
 import net.youapps.translation_engines.TranslationEngine
 import net.youapps.translation_engines.TranslationEngines
+import java.io.File
+import java.io.FileOutputStream
+import java.io.PrintWriter
+import java.io.StringWriter
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
+        try {
+            doOnCreate()
+        } catch (t: Throwable) {
+            appendFallbackCrashLog(t)
+            // Sentry's UncaughtExceptionHandler (registered via SentryInitProvider ContentProvider
+            // before App.onCreate()) captures this automatically when rethrown, respecting the
+            // user's privacy/crash-reporting preferences.
+            throw t
+        }
+    }
 
+    private fun doOnCreate() {
         Preferences.initialize(this)
 
         initializeSentry()
@@ -49,9 +67,7 @@ class App : Application() {
             }
         }
 
-        DatabaseHolder().initDb(
-            this
-        )
+        DatabaseHolder().initDb(this)
 
         SpeechHelper.initTTS(this)
 
@@ -60,6 +76,20 @@ class App : Application() {
 
         // initialize all translation engines
         updateAllTranslationEngines()
+    }
+
+    private fun appendFallbackCrashLog(t: Throwable) {
+        try {
+            val sw = StringWriter()
+            t.printStackTrace(PrintWriter(sw))
+            val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
+            val entry = "=== STARTUP CRASH $ts ===\n$sw\n"
+            val logFile = File(filesDir, "crashlog.txt")
+            if (logFile.exists() && logFile.length() > 256 * 1024) {
+                logFile.writeText(logFile.readText().takeLast(128 * 1024))
+            }
+            FileOutputStream(logFile, true).use { it.write(entry.toByteArray(Charsets.UTF_8)) }
+        } catch (_: Throwable) {}
     }
 
     private fun buildEngineList(settingsProvider: EnginePreferencesProviderImpl): List<TranslationEngine> {
@@ -99,7 +129,7 @@ class App : Application() {
     }
 
     companion object {
-        lateinit var translationEngines: List<TranslationEngine>
+        var translationEngines: List<TranslationEngine> = emptyList()
 
         fun updateAllTranslationEngines() {
             for (engine in translationEngines) {
