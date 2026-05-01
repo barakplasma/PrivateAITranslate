@@ -25,7 +25,6 @@ import com.barakplasma.privateaitranslate.util.CrashLogger
 import com.barakplasma.privateaitranslate.util.EnginePreferencesProviderImpl
 import com.barakplasma.privateaitranslate.util.Preferences
 import com.barakplasma.privateaitranslate.util.SpeechHelper
-import io.sentry.Sentry
 import io.sentry.android.core.SentryAndroid
 import net.youapps.translation_engines.TranslationEngine
 import net.youapps.translation_engines.TranslationEngines
@@ -44,10 +43,9 @@ class App : Application() {
             doOnCreate()
         } catch (t: Throwable) {
             appendFallbackCrashLog(t)
-            try {
-                Sentry.captureException(t)
-                Sentry.flush(5_000)
-            } catch (_: Throwable) {}
+            // Sentry's UncaughtExceptionHandler (registered via SentryInitProvider ContentProvider
+            // before App.onCreate()) captures this automatically when rethrown, respecting the
+            // user's privacy/crash-reporting preferences.
             throw t
         }
     }
@@ -87,6 +85,9 @@ class App : Application() {
             val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
             val entry = "=== STARTUP CRASH $ts ===\n$sw\n"
             val logFile = File(filesDir, "crashlog.txt")
+            if (logFile.exists() && logFile.length() > 256 * 1024) {
+                logFile.writeText(logFile.readText().takeLast(128 * 1024))
+            }
             FileOutputStream(logFile, true).use { it.write(entry.toByteArray(Charsets.UTF_8)) }
         } catch (_: Throwable) {}
     }
