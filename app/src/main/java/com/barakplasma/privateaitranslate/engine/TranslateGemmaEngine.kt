@@ -50,13 +50,29 @@ class TranslateGemmaEngine(
     override val supportedModels = listOf("CPU", "GPU")
 
     private var liveEngine: Engine? = null
+    @Volatile private var activeConversation: AutoCloseable? = null
     private var backendAvailability: MutableMap<String, Boolean?> = mutableMapOf()
 
     override fun createOrRecreate(): TranslationEngine = apply {
         closeLiveEngine()
     }
 
+    @Synchronized
+    private fun closeActiveConversation() {
+        try {
+            activeConversation?.close()
+        } catch (e: Exception) {
+            CrashLogger.w(TAG, "Failed to close stale conversation: ${e.message}", e)
+        } finally {
+            activeConversation = null
+        }
+    }
+
+    @Synchronized
     private fun closeLiveEngine() {
+        // Close active conversation first — closing the Engine while a session is open
+        // can orphan the native session, causing FAILED_PRECONDITION on the next createConversation.
+        closeActiveConversation()
         try {
             liveEngine?.close()
         } catch (e: Exception) {
@@ -184,20 +200,29 @@ class TranslateGemmaEngine(
             val convConfig = ConversationConfig(
                 samplerConfig = SamplerConfig(topK = 40, topP = 0.95, temperature = 0.1)
             )
+
+            // Close any session left open by a cancelled/interrupted prior translation
+            // before creating a new one — the engine only supports one session at a time.
+            closeActiveConversation()
             val conversation = engine.createConversation(convConfig)
+            activeConversation = conversation
 
-            conversation.use { conv ->
-                val flow = conv.sendMessageAsync(prompt)
+            try {
+                conversation.use { conv ->
+                    val flow = conv.sendMessageAsync(prompt)
 
-                flow.collect { chunk ->
-                    chunk?.let {
-                        try {
-                            if (sb.length < maxOutputChars) sb.append(it)
-                        } catch (e: Exception) {
-                            CrashLogger.w(TAG, "Failed to append chunk: ${e.message}", e)
+                    flow.collect { chunk ->
+                        chunk?.let {
+                            try {
+                                if (sb.length < maxOutputChars) sb.append(it)
+                            } catch (e: Exception) {
+                                CrashLogger.w(TAG, "Failed to append chunk: ${e.message}", e)
+                            }
                         }
                     }
                 }
+            } finally {
+                activeConversation = null
             }
 
             val result = sb.toString().trim()
