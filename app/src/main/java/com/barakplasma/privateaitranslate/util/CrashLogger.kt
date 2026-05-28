@@ -102,6 +102,10 @@ object CrashLogger {
             Log.i(TAG, "Crash reporting is disabled, logs not sent")
             return
         }
+        if (!logFile.exists() || logFile.length() == 0L) {
+            Log.i(TAG, "No crash logs to send")
+            return
+        }
         val logs = readLog()
         if (logs.isBlank()) {
             Log.i(TAG, "Log file is empty, nothing to send to Sentry")

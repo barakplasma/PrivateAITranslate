@@ -51,7 +51,7 @@ class TranslateGemmaEngine(
 
     private var liveEngine: Engine? = null
     @Volatile private var activeConversation: AutoCloseable? = null
-    private var backendAvailability: MutableMap<String, Boolean?> = mutableMapOf()
+    private var backendAvailability: MutableMap<String, Boolean> = mutableMapOf()
 
     override fun createOrRecreate(): TranslationEngine = apply {
         closeLiveEngine()
@@ -81,58 +81,63 @@ class TranslateGemmaEngine(
         liveEngine = null
     }
 
-    private fun isBackendAvailable(backendName: String): Boolean {
-        backendAvailability[backendName]?.let { return it }
+    // Persists a flag synchronously before GPU Engine init so that a SIGSEGV (which kills the
+    // process without going through any Java handler) is detected on the next launch.
+    private fun isGpuCrashGuardSet(): Boolean =
+        appContext.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+            .getBoolean(GPU_CRASH_GUARD_KEY, false)
 
-        val available = try {
+    private fun setGpuCrashGuard(active: Boolean) {
+        appContext.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(GPU_CRASH_GUARD_KEY, active)
+            .commit() // synchronous — must persist before the potential native crash
+    }
+
+    // Creates the Backend and caches availability in one step, avoiding double instantiation.
+    private fun tryCreateBackend(backendName: String): Backend? {
+        if (backendAvailability[backendName] == false) return null
+        return try {
             when (backendName) {
                 "GPU" -> {
+                    if (isGpuCrashGuardSet()) {
+                        CrashLogger.w(TAG, "GPU backend disabled: previous initialization caused a crash. Falling back to CPU.")
+                        backendAvailability["GPU"] = false
+                        return null
+                    }
                     Backend.GPU()
-                    true
                 }
-                else -> {
-                    Backend.CPU()
-                    true
-                }
-            }
+                else -> Backend.CPU()
+            }.also { backendAvailability[backendName] = true }
         } catch (e: UnsatisfiedLinkError) {
             CrashLogger.w(TAG, "Backend '$backendName' not available: ${e.message}")
-            false
+            backendAvailability[backendName] = false
+            null
         } catch (e: UnsupportedOperationException) {
             CrashLogger.w(TAG, "Backend '$backendName' not supported on this device: ${e.message}")
-            false
+            backendAvailability[backendName] = false
+            null
         } catch (e: Exception) {
-            CrashLogger.w(TAG, "Failed to check backend '$backendName' availability: ${e.message}")
-            false
+            CrashLogger.w(TAG, "Backend '$backendName' failed to create: ${e.message}", e)
+            backendAvailability[backendName] = false
+            null
         }
-
-        backendAvailability[backendName] = available
-        return available
     }
 
     private fun getBackendWithFallback(): Pair<String, Backend> {
         val selectedBackend = getSelectedModel() ?: "CPU"
         // Priority order: selected backend first, then the other.
-        // This ensures CPU is tried before GPU when CPU is selected (the default),
-        // preventing a fallthrough to GPU which causes SIGSEGV on unsupported devices.
+        // CPU-first default prevents fallthrough to GPU which causes SIGSEGV on unsupported devices.
         val order = listOf(selectedBackend) + listOf("CPU", "GPU").filter { it != selectedBackend }
 
         for (backendName in order) {
-            if (!isBackendAvailable(backendName)) continue
-            try {
-                val backend = when (backendName) {
-                    "GPU" -> Backend.GPU()
-                    else -> Backend.CPU()
-                }
-                if (backendName != selectedBackend) {
-                    CrashLogger.w(TAG, "Falling back from '$selectedBackend' to '$backendName'")
-                } else {
-                    CrashLogger.i(TAG, "Using selected backend: $backendName")
-                }
-                return Pair(backendName, backend)
-            } catch (e: Exception) {
-                CrashLogger.w(TAG, "Backend '$backendName' failed to create: ${e.message}", e)
+            val backend = tryCreateBackend(backendName) ?: continue
+            if (backendName != selectedBackend) {
+                CrashLogger.w(TAG, "Falling back from '$selectedBackend' to '$backendName'")
+            } else {
+                CrashLogger.i(TAG, "Using selected backend: $backendName")
             }
+            return Pair(backendName, backend)
         }
 
         throw IllegalStateException("All translation backends failed. Device may not support TranslateGemma.")
@@ -163,8 +168,13 @@ class TranslateGemmaEngine(
                 backend = backend
             )
             CrashLogger.i(TAG, "Initializing engine ($backendName) with model: ${modelFile.absolutePath} ($modelSizeGB GB)")
+            // Set the crash guard before native GPU init — if Engine(config) causes a SIGSEGV the
+            // process is killed without any Java handler running, so this flag persists to the next
+            // launch and disables GPU automatically.
+            if (backendName == "GPU") setGpuCrashGuard(true)
             val engine = Engine(config)
             engine.initialize()
+            if (backendName == "GPU") setGpuCrashGuard(false) // GPU init succeeded; clear guard
             liveEngine = engine
             CrashLogger.i(TAG, "Engine initialized successfully ($backendName)")
             engine
@@ -241,6 +251,7 @@ class TranslateGemmaEngine(
     }
 
     companion object {
+        const val GPU_CRASH_GUARD_KEY = "translategemma_gpu_init_incomplete"
         const val MODEL_FILENAME = "translategemma-4b-it-int4-generic.litertlm"
         const val MODEL_DIR = "translategemma"
         const val MODEL_SIZE_BYTES = 2_000_000_000L
