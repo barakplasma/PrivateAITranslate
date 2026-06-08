@@ -20,6 +20,7 @@ package com.barakplasma.privateaitranslate.ui.views
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.os.Build
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,12 +37,14 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Translate
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -76,6 +79,7 @@ fun TranslationComponent(
     viewModel: TranslationModel,
     showLanguageSelector: Boolean = false,
     largeTextFields: Boolean = true,
+    showEngineSwitcher: Boolean = false,
     onTranslationError: (e: String, important: Boolean) -> Unit
 ) {
     val context = LocalContext.current
@@ -222,6 +226,9 @@ fun TranslationComponent(
                     showLanguageSelector = showLanguageSelector,
                     largeTextFields = largeTextFields
                 )
+                if (showEngineSwitcher) {
+                    EngineSwitcherRow(viewModel)
+                }
             } else {
                 viewModel.translatedTexts.filter { it.value.translatedText.isNotEmpty() }
                     .forEach { (engineName, translation) ->
@@ -277,6 +284,38 @@ fun TranslationComponent(
         }
     }
 }
+
+@Composable
+private fun EngineSwitcherRow(viewModel: TranslationModel) {
+    val engines = App.getAvailableEngines()
+    if (engines.size < 2) return
+    val rowScrollState = rememberScrollState()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rowScrollState)
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        engines.forEach { engine ->
+            val selected = engine.name == viewModel.engine.name
+            FilterChip(
+                modifier = Modifier.padding(end = 6.dp),
+                selected = selected,
+                onClick = {
+                    if (!selected) {
+                        viewModel.setEngineTemporary(engine)
+                        viewModel.translateNow()
+                    }
+                },
+                label = { Text(engine.chipLabel()) }
+            )
+        }
+    }
+}
+
+private fun TranslationEngine.chipLabel(): String =
+    name.removePrefix("Google ").removeSuffix(" (On-Device)").trim()
 
 @Composable
 private fun TranslationFieldForTranslation(

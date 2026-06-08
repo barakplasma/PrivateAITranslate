@@ -88,6 +88,7 @@ class TranslationModel : ViewModel() {
     private val _apiError = MutableSharedFlow<Exception?>(replay = 0)
     val apiError = _apiError.asSharedFlow()
 
+    private var translateJob: Job? = null
     private var simTranslationJobs = emptyList<Job>()
 
     private var mediaPlayer: MediaPlayer? = null
@@ -176,7 +177,8 @@ class TranslationModel : ViewModel() {
         translatedTexts = App.getAvailableEngines()
             .associate { it.name to Translation("") }
 
-        viewModelScope.launch(Dispatchers.IO) {
+        translateJob?.cancel()
+        translateJob = viewModelScope.launch(Dispatchers.IO) {
             val textToTranslate = insertedText
             val sourceCode = sourceLanguage.code
             val targetCode = targetLanguage.code
@@ -325,6 +327,10 @@ class TranslationModel : ViewModel() {
 
     fun setCurrentEngine(engine: TranslationEngine) {
         Preferences.put(Preferences.selectedEngineKey, engine.name)
+        this.engine = engine
+    }
+
+    fun setEngineTemporary(engine: TranslationEngine) {
         this.engine = engine
     }
 
