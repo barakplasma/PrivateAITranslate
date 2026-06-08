@@ -38,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import com.barakplasma.privateaitranslate.App
 import com.barakplasma.privateaitranslate.R
 import com.barakplasma.privateaitranslate.ext.toastFromMainThread
 import com.barakplasma.privateaitranslate.ui.components.AppHeader
@@ -58,6 +59,15 @@ class ShareActivity : TranslationActivity() {
 
             LaunchedEffect(Unit) {
                 translationModel.refresh()
+                // Default to ML Kit (fast, free, on-device) in the share popup.
+                // refresh() may have re-applied the persisted engine preference, so
+                // we override it here without persisting — the main app is unaffected.
+                App.getAvailableEngines()
+                    .find { it.name == "Google ML Kit (On-Device)" }
+                    ?.let { mlKit ->
+                        translationModel.setEngineTemporary(mlKit)
+                        translationModel.translateNow(cancelOnUnsupportedLanguages = false)
+                    }
             }
 
             AlertDialog(
@@ -100,7 +110,8 @@ class ShareActivity : TranslationActivity() {
                         modifier = Modifier.fillMaxSize(),
                         viewModel = translationModel,
                         showLanguageSelector = true,
-                        largeTextFields = false
+                        largeTextFields = false,
+                        showEngineSwitcher = true
                     ) { e, important ->
                         context.toastFromMainThread(e)
                     }
