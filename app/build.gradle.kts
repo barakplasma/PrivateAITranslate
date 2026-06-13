@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.barakplasma.privateaitranslate"
-        minSdk = 26
+        minSdk = 34
         targetSdk = 35
         versionCode = 58
         versionName = "19.0"
@@ -118,7 +118,7 @@ dependencies {
     implementation("com.google.mlkit:genai-prompt:1.0.0-beta1")
 
     // LiteRT-LM on-device LLM inference
-    implementation("com.google.ai.edge.litertlm:litertlm-android:0.10.0")
+    implementation("com.google.ai.edge.litertlm:litertlm-android:0.13.1")
 
     // ML Kit Translation
     implementation("com.google.mlkit:translate:17.0.3")
