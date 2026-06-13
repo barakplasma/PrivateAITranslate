@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.barakplasma.privateaitranslate"
-        minSdk = 34
+        minSdk = 33
         targetSdk = 35
         versionCode = 58
         versionName = "19.0"
@@ -112,10 +112,10 @@ dependencies {
     implementation("cz.adaptech.tesseract4android:tesseract4android-openmp:4.9.0")
 
     // Dynamic color scheme
-    implementation("com.google.android.material:material:1.12.0")
+    implementation("com.google.android.material:material:1.14.0")
 
     // Gemini Nano on-device AI via ML Kit GenAI Prompt API
-    implementation("com.google.mlkit:genai-prompt:1.0.0-beta1")
+    implementation("com.google.mlkit:genai-prompt:1.0.0-beta2")
 
     // LiteRT-LM on-device LLM inference
     implementation("com.google.ai.edge.litertlm:litertlm-android:0.13.1")
@@ -125,5 +125,5 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
 
     // Sentry for crash reporting (sentry-android includes NDK, ANR, and proper Android integrations)
-    implementation("io.sentry:sentry-android:7.14.0")
+    implementation("io.sentry:sentry-android:8.43.1")
 }
