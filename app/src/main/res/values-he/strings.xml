@@ -87,4 +87,36 @@
     <string name="clear">פינוי</string>
     <string name="tess_summary">‬Tesseract היא מערכת זיהוי תווים אופטי במסגרת תוכנה חופשית, המופצת בכפוף לרישיון Apache. היא שוחררה כקוד פתוח בשנת 2005 והפיתוח שלה ממומן על ידי גוגל מאז 2006. Tesseract נחשבת לאחד ממנועי זיהוי התווים האופטי הפתוחים והמדויקים ביותר הקיימים. למידע נוסף: %1$s.</string>
     <string name="invalid_selection_area">אזור בחירה שגוי!</string>
+    <!-- Text -->
+    <string name="translation_error_hint">TODO: The selected translation engine doesn\'t seem to work. Please select a different one in the settings.</string>
+    <string name="unsupported_language">TODO: Engine doesn\'t support language %1$s</string>
+    <!-- Settings - Security -->
+    <string name="security">TODO: Security</string>
+    <string name="high_security_mode">TODO: High security mode</string>
+    <string name="high_security_mode_summary">TODO: Restrict translation to on-device engines only. No text is sent over the network.</string>
+    <!-- Settings - Translation info -->
+    <string name="translation_engine">TODO: Translation engine</string>
+    <string name="translation_api">TODO: Translation API</string>
+    <!-- Additional Info -->
+    <string name="alternative_translations">TODO: Alternative translations</string>
+    <!-- TranslateGemma -->
+    <string name="translategemma_title">TranslateGemma (On-Device)</string>
+    <string name="translategemma_settings_summary">TODO: Download and manage the on-device TranslateGemma model.</string>
+    <string name="translategemma_summary">TODO: TranslateGemma is an on-device translation model by Google that runs entirely on your device. It supports 55+ languages and requires no internet connection after the initial download.\n\nModel size: ~2 GB (INT4 quantized). A Wi-Fi connection and ~3 GB of free storage are required for download.</string>
+    <string name="translategemma_model_not_downloaded">TODO: Model not downloaded</string>
+    <string name="translategemma_model_downloaded">TODO: Model downloaded</string>
+    <string name="translategemma_downloading">TODO: Downloading… %1$d%%</string>
+    <string name="translategemma_download_error">TODO: Download failed. Tap to retry.</string>
+    <string name="translategemma_import">TODO: Import from file</string>
+    <string name="translategemma_import_success">TODO: Model imported successfully</string>
+    <string name="translategemma_import_error">TODO: Import failed. Make sure the file is a valid .litertlm model.</string>
+    <!-- Diagnostics -->
+    <string name="diagnostics">TODO: Diagnostics</string>
+    <string name="crash_log">TODO: Crash log</string>
+    <string name="crash_log_summary">TODO: View local crash log for debugging</string>
+    <string name="crash_log_empty">TODO: (no crashes logged)</string>
+    <string name="crash_log_clear">TODO: Clear log</string>
+    <string name="close">TODO: Close</string>
+    <string name="send_logs">TODO: Send logs to Sentry</string>
+    <string name="send_logs_summary">TODO: Send local crash log to Sentry for analysis</string>
 </resources>
