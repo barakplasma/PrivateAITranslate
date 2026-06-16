@@ -258,11 +258,12 @@ class TranslateGemmaEngine(
         const val MODEL_DOWNLOAD_URL =
             "https://huggingface.co/barakplasma/translategemma-4b-it-android-task-quantized/resolve/main/artifacts/int4-generic/translategemma-4b-it-int4-generic.litertlm"
         const val MAX_INPUT_CHARS = 1000
+        const val MAX_SAFE_CHUNK_CHARS = (MAX_INPUT_CHARS * 8) / 10  // 80% → 800 chars
 
         fun getModelFile(context: Context): File =
             File(context.getExternalFilesDir(null), "$MODEL_DIR/$MODEL_FILENAME")
 
-        fun splitIntoChunks(text: String, maxCharsPerChunk: Int = MAX_INPUT_CHARS): List<String> {
+        fun splitIntoChunks(text: String, maxCharsPerChunk: Int = MAX_SAFE_CHUNK_CHARS): List<String> {
             if (text.length <= maxCharsPerChunk) return listOf(text)
 
             val bi = BreakIterator.getSentenceInstance()
