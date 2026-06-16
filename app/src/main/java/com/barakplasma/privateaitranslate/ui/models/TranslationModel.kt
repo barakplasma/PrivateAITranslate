@@ -185,7 +185,7 @@ class TranslationModel : ViewModel() {
             val currentEngine = engine
 
             val translation = try {
-                if (currentEngine is TranslateGemmaEngine && textToTranslate.length > TranslateGemmaEngine.MAX_INPUT_CHARS) {
+                if (currentEngine is TranslateGemmaEngine && textToTranslate.length > TranslateGemmaEngine.MAX_SAFE_CHUNK_CHARS) {
                     translateGemmaChunked(currentEngine, textToTranslate, sourceCode, targetCode)
                 } else {
                     currentEngine.translate(textToTranslate, sourceCode, targetCode)

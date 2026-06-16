@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Translate You</string>
     <!-- Dialog -->
     <string name="okay">אישור</string>
     <string name="cancel">ביטול</string>
@@ -36,7 +35,7 @@
     <string name="required">חובה</string>
     <string name="privacy_policy">מדיניות פרטיות</string>
     <string name="forget">לשכוח</string>
-    <string name="compact_history_summary">להציג את 3 שירות הטקסט הראשונות כברירת מחדל בהיסטוריה</string>
+    <string name="compact_history_summary">להציג את 3 השורות הראשונות כברירת מחדל בהיסטוריה</string>
     <string name="open">פתיחה</string>
     <string name="compact_history">צמצום היסטוריה</string>
     <string name="simultaneous_translation">תרגום סימולטני</string>
@@ -82,9 +81,41 @@
     <string name="skip_similar_entries_desc">לאחסן רק רשומות ייחודיות בהיסטוריה לפי הוספה ושפות.</string>
     <string name="select_theme">בחירת ערכת עיצוב</string>
     <string name="theme_black">שחור</string>
-    <string name="irreversible">אי אפשר להשתקם מזה. להמשיך\?</string>
+    <string name="irreversible">פעולה זו אינה הפיכה. להמשיך\?</string>
     <string name="clear_favorites">פינוי המועדפים</string>
     <string name="clear">פינוי</string>
-    <string name="tess_summary">‬Tesseract היא מערכת זיהוי תווים אופטי במסגרת תוכנה חופשית, המופצת בכפוף לרישיון Apache. היא שוחררה כקוד פתוח בשנת 2005 והפיתוח שלה ממומן על ידי גוגל מאז 2006. Tesseract נחשבת לאחד ממנועי זיהוי התווים האופטי הפתוחים והמדויקים ביותר הקיימים. למידע נוסף: %1$s.</string>
+    <string name="tess_summary">Tesseract היא מערכת זיהוי תווים אופטי במסגרת תוכנה חופשית, המופצת בכפוף לרישיון Apache. היא שוחררה כקוד פתוח בשנת 2005 והפיתוח שלה ממומן על ידי גוגל מאז 2006. Tesseract נחשבת לאחד ממנועי זיהוי התווים האופטי הפתוחים והמדויקים ביותר הקיימים. למידע נוסף: %1$s.</string>
     <string name="invalid_selection_area">אזור בחירה שגוי!</string>
+    <!-- Text -->
+    <string name="translation_error_hint">נראה שמנוע התרגום הנבחר אינו עובד. נא לבחור מנוע אחר בהגדרות.</string>
+    <string name="unsupported_language">המנוע אינו תומך בשפה %1$s</string>
+    <!-- Settings - Security -->
+    <string name="security">אבטחה</string>
+    <string name="high_security_mode">מצב אבטחה גבוהה</string>
+    <string name="high_security_mode_summary">הגבלת התרגום למנועים מקומיים על המכשיר בלבד. שום טקסט לא יישלח ברשת.</string>
+    <!-- Settings - Translation info -->
+    <string name="translation_engine">מנוע תרגום</string>
+    <string name="translation_api">ממשק תרגום (API)</string>
+    <!-- Additional Info -->
+    <string name="alternative_translations">תרגומים חלופיים</string>
+    <!-- TranslateGemma -->
+    <string name="translategemma_title">TranslateGemma (על המכשיר)</string>
+    <string name="translategemma_settings_summary">הורדה וניהול של מודל TranslateGemma המקומי על המכשיר.</string>
+    <string name="translategemma_summary">TranslateGemma הוא מודל תרגום מקומי על המכשיר מבית גוגל, הרץ כולו באופן מקומי. הוא תומך בלמעלה מ־55 שפות ואינו דורש חיבור לאינטרנט לאחר ההורדה הראשונית.\n\nגודל המודל: כ־2 ג״ב (INT4 quantized). נדרש חיבור Wi-Fi וכ־3 ג״ב של שטח אחסון פנוי לצורך ההורדה.</string>
+    <string name="translategemma_model_not_downloaded">המודל לא הורד</string>
+    <string name="translategemma_model_downloaded">המודל הורד</string>
+    <string name="translategemma_downloading">בתהליך הורדה… %1$d%%</string>
+    <string name="translategemma_download_error">ההורדה נכשלה. יש ללחוץ כדי לנסות שוב.</string>
+    <string name="translategemma_import">ייבוא מקובץ</string>
+    <string name="translategemma_import_success">המודל יובא בהצלחה</string>
+    <string name="translategemma_import_error">הייבוא נכשל. יש לוודא שהקובץ הוא מודל .litertlm תקין.</string>
+    <!-- Diagnostics -->
+    <string name="diagnostics">אבחון</string>
+    <string name="crash_log">יומן קריסות</string>
+    <string name="crash_log_summary">הצגת יומן קריסות מקומי לצורך ניפוי שגיאות (Debugging)</string>
+    <string name="crash_log_empty">(לא תועדו קריסות)</string>
+    <string name="crash_log_clear">ניקוי יומן</string>
+    <string name="close">סגירה</string>
+    <string name="send_logs">שליחת יומנים ל־Sentry</string>
+    <string name="send_logs_summary">שליחת יומן קריסות מקומי ל־Sentry לצורך ניתוח</string>
 </resources>
