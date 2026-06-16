@@ -6,10 +6,10 @@
 
 <!-- ---------- Badges ---------- -->
   <div align="center">
-    <img alt="License" src="https://img.shields.io/github/license/barakplasma/PrivateAlTranslate?color=c3e7ff&style=flat-square">
-    <img alt="Last commit" src="https://img.shields.io/github/last-commit/barakplasma/Private AI Translate?color=c3e7ff&style=flat-square">
-    <img alt="Repo size" src="https://img.shields.io/github/repo-size/barakplasma/Private AI Translate?color=c3e7ff&style=flat-square">
-    <img alt="Stars" src="https://img.shields.io/github/stars/barakplasma/Private AI Translate?color=c3e7ff&style=flat-square">
+    <img alt="License" src="https://img.shields.io/github/license/barakplasma/PrivateAITranslate?color=c3e7ff&style=flat-square">
+    <img alt="Last commit" src="https://img.shields.io/github/last-commit/barakplasma/PrivateAITranslate?color=c3e7ff&style=flat-square">
+    <img alt="Repo size" src="https://img.shields.io/github/repo-size/barakplasma/PrivateAITranslate?color=c3e7ff&style=flat-square">
+    <img alt="Stars" src="https://img.shields.io/github/stars/barakplasma/PrivateAITranslate?color=c3e7ff&style=flat-square">
     <br>
 </div>
 </div>
@@ -20,13 +20,13 @@
 **Private AI Translate** is a fork of the excellent [**TranslateYou**](https://github.com/you-apps/TranslateYou) by [**you-apps**](https://github.com/you-apps). 
 
 This fork was created to:
-1.  **Prioritize On-Device Translation**: It makes **on-device LLM translation** (via Gemini Nano) the default engine for maximum privacy and offline capability.
+1.  **Prioritize On-Device Translation**: It makes **on-device LLM translation** (via TranslateGemma) the default engine for maximum privacy and offline capability.
 2.  **Streamline Engines**: Removed specific non-local APIs to focus on privacy-respecting and self-hostable alternatives.
 3.  **Modernize SDKs**: Updated internal build configurations and package structures for this specific distribution.
 
 ## Features
 
-- [x] **On-Device AI Translation**: Powered by Gemini Nano (default).
+- [x] **On-Device AI Translation**: Powered by TranslateGemma (default).
 - [x] **Privacy First**: Translations stay on your device whenever possible.
 - [x] more than 150 supported languages
 - [x] Material Design 3 (You)
@@ -41,13 +41,13 @@ This fork was created to:
 <!-- ---------- Download ---------- -->
 ## Download
 
-Download the latest release from the [**GitHub Releases**](https://github.com/barakplasma/Private AI Translate/releases) page.
+Download the latest release from the [**GitHub Releases**](https://github.com/barakplasma/PrivateAITranslate/releases) page.
 
 <!-- ---------- Supported translation engines ---------- -->
 ## Supported translation engines
 
 ### Local / On-Device (Recommended)
-* **Gemini Nano (On-Device)**: High-quality translation performed locally on supported Android devices (e.g., Pixel 8+, S24+).
+* **TranslateGemma (On-Device)**: High-quality translation performed entirely on your device using Google's TranslateGemma model via LiteRT. Supports 55+ languages. Requires a one-time ~2 GB download; no account or internet connection needed afterwards.
 
 ### Open Source / Self-hostable
 * <a href="https://github.com/LibreTranslate/LibreTranslate">LibreTranslate</a>
@@ -82,13 +82,13 @@ Download the latest release from the [**GitHub Releases**](https://github.com/ba
 ## Feedback and contributions
 ***All contributions are very welcome!***
 
-* Bug reports and feature requests for this fork can be submitted [here](https://github.com/barakplasma/Private AI Translate/issues).
+* Bug reports and feature requests for this fork can be submitted [here](https://github.com/barakplasma/PrivateAITranslate/issues).
 * If you wish to contribute, please **fork** the project and submit a [**pull request**](https://help.github.com/articles/about-pull-requests/).
 
 <!-- ---------- Privacy Policy and License ---------- -->
 ## Privacy Policy
 
-**Private AI Translate's privacy policy is available** [**here**](https://github.com/barakplasma/Private AI Translate/blob/master/PRIVACY%20POLICY.md)
+**Private AI Translate's privacy policy is available** [**here**](https://github.com/barakplasma/PrivateAITranslate/blob/master/PRIVACY%20POLICY.md)
 
 ## Credits
 * Originally developed by [**you-apps**](https://github.com/you-apps) (TranslateYou).
