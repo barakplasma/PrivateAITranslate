@@ -121,3 +121,55 @@ jobs:
           tag_name: ${{ github.ref_name }}
           files: "app-release-no-internet.apk"
           fail_on_unmatched_files: true
+
+  build-pure-offline:
+    name: Build, sign and release pure-offline app
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+          cache: "gradle"
+
+      - name: Build pure-offline APK
+        run: ./gradlew assemblePureOfflineRelease --no-daemon
+
+      - name: Sign APK
+        env:
+          KEYSTORE: ${{ secrets.KEYSTORE }}
+        if: ${{ env.KEYSTORE != '' }}
+        uses: ilharp/sign-android-release@v1
+        id: sign
+        with:
+          releaseDir: app/build/outputs/apk/pureOffline/release
+          signingKey: ${{ secrets.KEYSTORE }}
+          keyAlias: ${{ secrets.SIGNING_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          buildToolsVersion: 35.0.0
+
+      - name: Rename and Sign APK
+        env:
+          KEYSTORE: ${{ secrets.KEYSTORE }}
+        run: |
+          if [ "${{ env.KEYSTORE }}" != "" ]; then
+            mv "${{ steps.sign.outputs.signedFile }}" "app-release-pure-offline.apk"
+          else
+            echo "No production keystore secret set — using committed debug signing key for consistent APK signatures."
+            APKSIGNER=$(find $ANDROID_HOME/build-tools -name "apksigner" | sort -r | head -n 1)
+            $APKSIGNER sign --ks app/debug-signing.keystore --ks-pass pass:android123 --ks-key-alias privateaitranslate --key-pass pass:android123 app/build/outputs/apk/pureOffline/release/app-pureOffline-release-unsigned.apk
+            mv app/build/outputs/apk/pureOffline/release/app-pureOffline-release-unsigned.apk "app-release-pure-offline.apk"
+          fi
+
+      - name: Upload pure-offline APK to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: "app-release-pure-offline.apk"
+          fail_on_unmatched_files: true
