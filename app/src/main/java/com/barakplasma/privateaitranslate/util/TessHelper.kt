@@ -21,6 +21,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.util.Log
+import com.barakplasma.privateaitranslate.BuildConfig
 import com.barakplasma.privateaitranslate.R
 import com.barakplasma.privateaitranslate.RetrofitHelper
 import com.barakplasma.privateaitranslate.ext.toastFromMainThread
@@ -43,6 +44,7 @@ object TessHelper {
     }
 
     suspend fun getAvailableLanguages(): List<TessLanguage> {
+        if (BuildConfig.ON_DEVICE_ONLY) return emptyList()
         return try {
             externalApi.getAvailableTessLanguages().tree
                 .filter { it.path.endsWith(DATA_FILE_SUFFIX) }
@@ -85,6 +87,10 @@ object TessHelper {
     }
 
     suspend fun downloadLanguageData(context: Context, languagePath: String, onProgress: (Float) -> Unit) {
+        if (BuildConfig.ON_DEVICE_ONLY) {
+            onProgress(-1f)
+            return
+        }
         val url = "$baseUrl/$languagePath"
         val targetFile = File(getTessDir(context), languagePath)
 
