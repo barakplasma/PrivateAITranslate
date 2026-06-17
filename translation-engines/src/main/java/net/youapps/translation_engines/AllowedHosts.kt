@@ -19,6 +19,7 @@ package net.youapps.translation_engines
 
 import okhttp3.Interceptor
 import okhttp3.Response
+import java.io.IOException
 
 /**
  * Global OkHttp allowlist. App.kt calls [configure] once at startup with the set of permitted
@@ -45,8 +46,8 @@ class AllowedHostsInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val host = chain.request().url.host
         val allowed = AllowedHosts.snapshot()
-        check(allowed.any { host == it || host.endsWith(".$it") }) {
-            "Outbound request to '$host' is not in the allowed hosts list"
+        if (!allowed.contains(host) && allowed.none { host.endsWith(".$it") }) {
+            throw IOException("Outbound request to '$host' is not in the allowed hosts list")
         }
         return chain.proceed(chain.request())
     }
