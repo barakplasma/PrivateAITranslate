@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.barakplasma.privateaitranslate.BuildConfig
 import com.barakplasma.privateaitranslate.obj.TessLanguage
 import com.barakplasma.privateaitranslate.util.TessHelper
 import kotlin.collections.getValue
@@ -40,8 +41,10 @@ class TessModel : ViewModel() {
     fun init(context: Context) {
         downloadedLanguages = TessHelper.getDownloadedLanguages(context)
 
-        viewModelScope.launch(Dispatchers.IO) {
-            availableLanguages = TessHelper.getAvailableLanguages()
+        if (!BuildConfig.ON_DEVICE_ONLY) {
+            viewModelScope.launch(Dispatchers.IO) {
+                availableLanguages = TessHelper.getAvailableLanguages()
+            }
         }
     }
 

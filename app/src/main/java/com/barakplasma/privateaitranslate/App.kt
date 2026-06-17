@@ -53,11 +53,8 @@ class App : Application() {
     private fun doOnCreate() {
         Preferences.initialize(this)
 
-        initializeSentry()
-
-        CrashLogger.init(this)
-
-        // Disable crash reporting in high security mode or on-device only mode
+        // Disable crash reporting before Sentry init so the preference is set correctly
+        // from the first moment Sentry could capture anything.
         if (BuildConfig.ON_DEVICE_ONLY) {
             Preferences.put(Preferences.sendCrashReportsKey, false)
         } else {
@@ -66,6 +63,12 @@ class App : Application() {
                 Preferences.put(Preferences.sendCrashReportsKey, false)
             }
         }
+
+        if (!BuildConfig.ON_DEVICE_ONLY) {
+            initializeSentry()
+        }
+
+        CrashLogger.init(this)
 
         DatabaseHolder().initDb(this)
 
