@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET"
+        tools:node="remove" />
+    <application>
+        <!-- Disable Sentry's SentryInitProvider ContentProvider auto-init. -->
+        <meta-data android:name="io.sentry.auto-init" android:value="false" tools:node="replace" />
+        <!-- Clear the DSN so even if auto-init were triggered it has nothing to connect to. -->
+        <meta-data android:name="io.sentry.dsn" android:value="" tools:node="replace" />
+    </application>
+</manifest>

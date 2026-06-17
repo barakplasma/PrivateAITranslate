@@ -26,8 +26,10 @@ import com.barakplasma.privateaitranslate.util.EnginePreferencesProviderImpl
 import com.barakplasma.privateaitranslate.util.Preferences
 import com.barakplasma.privateaitranslate.util.SpeechHelper
 import io.sentry.android.core.SentryAndroid
+import net.youapps.translation_engines.AllowedHosts
 import net.youapps.translation_engines.TranslationEngine
 import net.youapps.translation_engines.TranslationEngines
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintWriter
@@ -77,7 +79,7 @@ class App : Application() {
         val settingsProvider = EnginePreferencesProviderImpl()
         translationEngines = buildEngineList(settingsProvider)
 
-        // initialize all translation engines
+        // initialize all translation engines and set the OkHttp allowed-hosts list
         updateAllTranslationEngines()
     }
 
@@ -98,8 +100,13 @@ class App : Application() {
     private fun buildEngineList(settingsProvider: EnginePreferencesProviderImpl): List<TranslationEngine> {
         val engines = mutableListOf<TranslationEngine>()
         val factories: List<Pair<String, () -> TranslationEngine>> = buildList {
-            add("GeminiNano" to { GeminiNanoEngine(settingsProvider) })
-            add("MLKit" to { MLKitEngine(settingsProvider) })
+            // ML Kit and Gemini Nano are excluded from the pureOffline build (INCLUDE_GOOGLE_SERVICES=false)
+            // to prevent any Google Play Services telemetry. The pureOffline source set provides
+            // no-op stubs with isOnDevice=false so they never appear in the engine selector.
+            if (BuildConfig.INCLUDE_GOOGLE_SERVICES) {
+                add("GeminiNano" to { GeminiNanoEngine(settingsProvider) })
+                add("MLKit" to { MLKitEngine(settingsProvider) })
+            }
             add("TranslateGemma" to { TranslateGemmaEngine(settingsProvider, this@App) })
             if (!BuildConfig.ON_DEVICE_ONLY) {
                 try {
@@ -142,12 +149,35 @@ class App : Application() {
                     CrashLogger.e("App", "Failed to initialize engine '${engine.name}': ${t.message}", t)
                 }
             }
+            // Refresh the OkHttp allowlist after (re)init so any changed instance URL is picked up.
+            // In offline builds ON_DEVICE_ONLY=true so AllowedHosts stays empty, blocking all calls.
+            if (!BuildConfig.ON_DEVICE_ONLY) {
+                AllowedHosts.configure(buildAllowedHosts(translationEngines))
+            }
         }
 
         fun getAvailableEngines(): List<TranslationEngine> {
             if (BuildConfig.ON_DEVICE_ONLY) return translationEngines.filter { it.isOnDevice }
             val highSecurityMode = Preferences.get(Preferences.highSecurityModeKey, false)
             return if (highSecurityMode) translationEngines.filter { it.isOnDevice } else translationEngines
+        }
+
+        private fun buildAllowedHosts(engines: List<TranslationEngine>): Set<String> {
+            return buildSet {
+                // Extract the effective host from every non-on-device engine (includes user-configured instances)
+                for (engine in engines) {
+                    if (!engine.isOnDevice) {
+                        engine.getUrl().toHttpUrlOrNull()?.host?.let { add(it) }
+                    }
+                }
+                // GitHub: Tesseract OCR language list + data file downloads
+                add("api.github.com")
+                add("raw.githubusercontent.com")
+                // Sentry crash reporting
+                add("barakplasma.bugsink.com")
+                // LaraTranslate fetches its language list from a different subdomain than its API
+                add("developers.laratranslate.com")
+            }
         }
     }
 }
