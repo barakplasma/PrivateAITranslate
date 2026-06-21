@@ -28,6 +28,7 @@ object RetrofitHelper {
 
     inline fun <reified T> createInstance(baseUrl: String): T {
         val httpClient = OkHttpClient.Builder()
+            .addInterceptor(AllowedHostsInterceptor())
 
         return Retrofit.Builder()
             .baseUrl(baseUrl)

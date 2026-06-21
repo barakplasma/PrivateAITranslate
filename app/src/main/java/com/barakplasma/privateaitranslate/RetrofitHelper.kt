@@ -18,6 +18,7 @@
 package com.barakplasma.privateaitranslate
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import net.youapps.translation_engines.AllowedHostsInterceptor
 import net.youapps.translation_engines.JsonHelper
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -28,6 +29,7 @@ object RetrofitHelper {
 
     inline fun <reified T> createInstance(baseUrl: String): T {
         val httpClient = OkHttpClient.Builder()
+            .addInterceptor(AllowedHostsInterceptor())
 
         return Retrofit.Builder()
             .baseUrl(baseUrl)

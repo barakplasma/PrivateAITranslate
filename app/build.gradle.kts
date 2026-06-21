@@ -41,11 +41,20 @@ android {
         create("full") {
             dimension = "internet"
             buildConfigField("Boolean", "ON_DEVICE_ONLY", "false")
+            buildConfigField("Boolean", "INCLUDE_GOOGLE_SERVICES", "true")
         }
         create("noInternet") {
             dimension = "internet"
             buildConfigField("Boolean", "ON_DEVICE_ONLY", "true")
+            buildConfigField("Boolean", "INCLUDE_GOOGLE_SERVICES", "true")
             versionNameSuffix = "-offline"
+        }
+        create("pureOffline") {
+            dimension = "internet"
+            buildConfigField("Boolean", "ON_DEVICE_ONLY", "true")
+            buildConfigField("Boolean", "INCLUDE_GOOGLE_SERVICES", "false")
+            versionNameSuffix = "-pureoffline"
+            applicationIdSuffix = ".pureoffline"
         }
     }
 
@@ -114,15 +123,17 @@ dependencies {
     // Dynamic color scheme
     implementation("com.google.android.material:material:1.14.0")
 
-    // Gemini Nano on-device AI via ML Kit GenAI Prompt API
-    implementation("com.google.mlkit:genai-prompt:1.0.0-beta2")
+    // Gemini Nano and ML Kit Translation — excluded from pureOffline to prevent any Google
+    // Play Services telemetry; pureOffline uses stub engine classes instead.
+    "fullImplementation"("com.google.mlkit:genai-prompt:1.0.0-beta2")
+    "noInternetImplementation"("com.google.mlkit:genai-prompt:1.0.0-beta2")
+    "fullImplementation"("com.google.mlkit:translate:17.0.3")
+    "noInternetImplementation"("com.google.mlkit:translate:17.0.3")
+    "fullImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
+    "noInternetImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
 
-    // LiteRT-LM on-device LLM inference
+    // LiteRT-LM on-device LLM inference — no telemetry, included in all flavors
     implementation("com.google.ai.edge.litertlm:litertlm-android:0.13.1")
-
-    // ML Kit Translation
-    implementation("com.google.mlkit:translate:17.0.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
 
     // Sentry for crash reporting (sentry-android includes NDK, ANR, and proper Android integrations)
     implementation("io.sentry:sentry-android:8.43.1")
