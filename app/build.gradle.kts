@@ -132,7 +132,9 @@ dependencies {
     "fullImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
     "noInternetImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
 
-    // ML Kit Text Recognition (OCR) — excluded from pureOffline (no Google Play)
+    // ML Kit Text Recognition (OCR) + Language Identification — excluded from pureOffline (no Google Play)
+    "fullImplementation"("com.google.mlkit:language-id:17.0.6")
+    "noInternetImplementation"("com.google.mlkit:language-id:17.0.6")
     "fullImplementation"("com.google.mlkit:text-recognition:16.0.1")
     "noInternetImplementation"("com.google.mlkit:text-recognition:16.0.1")
     "fullImplementation"("com.google.mlkit:text-recognition-chinese:16.0.1")

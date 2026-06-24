@@ -19,6 +19,7 @@ package com.barakplasma.privateaitranslate.util
 
 import android.graphics.Bitmap
 import android.graphics.Rect
+import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
@@ -46,7 +47,7 @@ object MlKitOcrHelper {
         else -> TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     }
 
-    suspend fun getText(bitmap: Bitmap, langCode: String = ""): Pair<String, Map<Rect, String>>? {
+    private suspend fun runOcr(bitmap: Bitmap, langCode: String): Pair<String, Map<Rect, String>>? {
         val recognizer = recognizerFor(langCode)
         return try {
             val image = InputImage.fromBitmap(bitmap, 0)
@@ -73,5 +74,35 @@ object MlKitOcrHelper {
         } finally {
             recognizer.close()
         }
+    }
+
+    private fun scriptRecognizerLang(langCode: String): String? = when {
+        langCode.startsWith("zh") -> "zh"
+        langCode == "ja" -> "ja"
+        langCode == "ko" -> "ko"
+        langCode in setOf("hi", "mr") -> "hi"
+        else -> null
+    }
+
+    private suspend fun identifyScript(text: String): String? {
+        val client = LanguageIdentification.getClient()
+        return try {
+            val detected = client.identifyLanguage(text).await()
+            if (detected == "und") null else scriptRecognizerLang(detected)
+        } catch (_: Exception) {
+            null
+        } finally {
+            client.close()
+        }
+    }
+
+    suspend fun getText(bitmap: Bitmap, langCode: String = ""): Pair<String, Map<Rect, String>>? {
+        if (langCode.isNotEmpty()) return runOcr(bitmap, langCode)
+
+        // Auto-detect: run Latin OCR first, then use Language ID to re-run with a
+        // script-specific recognizer if the text is Chinese, Japanese, Korean, or Devanagari.
+        val latinResult = runOcr(bitmap, "")
+        val scriptCode = latinResult?.first?.takeIf { it.isNotBlank() }?.let { identifyScript(it) }
+        return if (scriptCode != null) runOcr(bitmap, scriptCode) ?: latinResult else latinResult
     }
 }
