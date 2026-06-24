@@ -81,6 +81,15 @@ android {
         }
     }
     namespace = "com.barakplasma.privateaitranslate"
+
+    sourceSets {
+        getByName("full") {
+            java.srcDirs("src/full/java", "src/sharedMlKit/java")
+        }
+        getByName("noInternet") {
+            java.srcDirs("src/noInternet/java", "src/sharedMlKit/java")
+        }
+    }
 }
 
 dependencies {
