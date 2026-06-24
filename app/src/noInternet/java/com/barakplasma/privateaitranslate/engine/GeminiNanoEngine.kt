@@ -17,7 +17,6 @@
 
 package com.barakplasma.privateaitranslate.engine
 
-import android.os.Build
 import com.google.mlkit.genai.prompt.GenerativeModel
 import net.youapps.translation_engines.ApiKeyState
 import net.youapps.translation_engines.EngineSettingsProvider
@@ -50,9 +49,6 @@ class GeminiNanoEngine(
     override suspend fun getLanguages(): List<Language> = SUPPORTED_LANGUAGES
 
     override suspend fun translate(query: String, source: String, target: String): Translation {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            throw IllegalStateException("Gemini Nano requires Android 8.0 (API 26) or higher")
-        }
         val currentModel = model
             ?: throw IllegalStateException("Gemini Nano model is not initialized")
 

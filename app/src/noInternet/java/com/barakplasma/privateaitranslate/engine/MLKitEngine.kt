@@ -3,6 +3,7 @@ package com.barakplasma.privateaitranslate.engine
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation as MLKitTranslation
+import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
 import kotlinx.coroutines.tasks.await
 import net.youapps.translation_engines.ApiKeyState
@@ -23,8 +24,17 @@ class MLKitEngine(
     override val supportsAudio = false
     override val isOnDevice = true
 
+    private var cachedTranslator: Translator? = null
+    private var cachedSource: String? = null
+    private var cachedTarget: String? = null
+
     override fun createOrRecreate(): TranslationEngine = apply {
-        // No global initialization needed; translator clients are created on demand.
+        synchronized(this) {
+            cachedTranslator?.close()
+            cachedTranslator = null
+            cachedSource = null
+            cachedTarget = null
+        }
     }
 
     override suspend fun getLanguages(): List<Language> {
@@ -41,23 +51,24 @@ class MLKitEngine(
             throw IllegalArgumentException("A specific target language must be selected.")
         }
 
-        val options = TranslatorOptions.Builder()
-            .setSourceLanguage(source)
-            .setTargetLanguage(target)
-            .build()
-            
-        val translator = MLKitTranslation.getClient(options)
-        
-        return try {
-            val conditions = DownloadConditions.Builder().build()
-            
-            // Ensure the required translation model is downloaded before translating
-            translator.downloadModelIfNeeded(conditions).await()
-            
-            val translatedText = translator.translate(query).await()
-            Translation(translatedText)
-        } finally {
-            translator.close()
+        val translator = synchronized(this) {
+            if (cachedSource == source && cachedTarget == target && cachedTranslator != null) {
+                cachedTranslator!!
+            } else {
+                cachedTranslator?.close()
+                val options = TranslatorOptions.Builder()
+                    .setSourceLanguage(source)
+                    .setTargetLanguage(target)
+                    .build()
+                val newTranslator = MLKitTranslation.getClient(options)
+                cachedTranslator = newTranslator
+                cachedSource = source
+                cachedTarget = target
+                newTranslator
+            }
         }
+
+        translator.downloadModelIfNeeded(DownloadConditions.Builder().build()).await()
+        return Translation(translator.translate(query).await())
     }
 }
