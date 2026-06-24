@@ -72,7 +72,6 @@ jobs:
 
   build-no-internet:
     name: Build, sign and release no-internet app
-    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -125,7 +124,6 @@ jobs:
 
   build-pure-offline:
     name: Build, sign and release pure-offline app
-    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
