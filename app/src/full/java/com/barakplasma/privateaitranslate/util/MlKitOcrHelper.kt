@@ -46,7 +46,7 @@ object MlKitOcrHelper {
                 }
             }
 
-            if (regions.isEmpty()) null else fullText.toString() to regions
+            fullText.toString() to regions
         } catch (_: Exception) {
             null
         } finally {

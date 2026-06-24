@@ -359,11 +359,19 @@ class TranslationModel : ViewModel() {
     }
 
     fun processImage(context: Context, image: Bitmap) = viewModelScope.launch {
-        // Try ML Kit OCR first (full flavor); stub returns null in noInternet flavor
+        // Try ML Kit OCR first (full/noInternet flavors); stub returns null in pureOffline flavor.
+        // null = ML Kit unavailable; empty regions = ML Kit ran but found no text.
         val ocrResult: Pair<String, Map<Rect, String>>? =
             withContext(Dispatchers.IO) { MlKitOcrHelper.getText(image) }
-                ?: run {
-                    // ML Kit unavailable — fall back to Tesseract
+                ?.let { result ->
+                    // ML Kit ran — if no text found and Tesseract is ready, let it try
+                    if (result.second.isEmpty() && TessHelper.areLanguagesDownloaded(context)) {
+                        withContext(Dispatchers.IO) { TessHelper.getText(context, image) }
+                    } else {
+                        result
+                    }
+                } ?: run {
+                    // ML Kit unavailable (pureOffline) — fall back to Tesseract
                     if (!TessHelper.areLanguagesDownloaded(context)) {
                         context.toastFromMainThread(R.string.init_tess_first)
                         return@launch
