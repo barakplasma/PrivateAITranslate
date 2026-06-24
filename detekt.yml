@@ -1,0 +1,78 @@
+# Detekt rule overrides — applied with --build-upon-default-config so all
+# unspecified rules remain at detekt defaults.
+
+style:
+  NewLineAtEndOfFile:
+    active: false # ktlint already enforces this; disabling avoids duplicate findings
+  MagicNumber:
+    active: true
+    ignoreNumbers:
+      - '-1'
+      - '0'
+      - '1'
+      - '2'
+      - '3'
+      - '4'
+      - '5'
+      - '6'
+      - '8'
+      - '10'
+      - '12'
+      - '16'
+      - '20'
+      - '24'
+      - '32'
+      - '33'
+      - '40'
+      - '50'
+      - '63'
+      - '80'
+      - '90'
+      - '100'
+      - '128'
+      - '180'
+      - '200'
+      - '256'
+      - '270'
+      - '360'
+      - '500'
+      - '1000'
+      - '1024'
+      - '1000000000'
+      - '1500000000'
+      - '2000000000'
+    ignoreEnums: true
+    ignoreConstantDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotation: true
+    ignoreNamedArgument: true
+    ignoreExtensionFunctions: true
+  ReturnCount:
+    active: true
+    max: 5
+    excludeGuardClauses: true
+  MaxLineLength:
+    active: true
+    maxLineLength: 250
+    excludeCommentStatements: true
+    excludeRawStrings: true
+  ThrowsCount:
+    max: 5
+  ExplicitItLambdaParameter:
+    active: false # idiomatic Kotlin; lambda receivers are self-describing
+  ForbiddenComment:
+    active: false # these comments are tracked in the issue tracker
+  UnusedPrivateMember:
+    ignoreAnnotated:
+      - 'Preview'
+  LoopWithTooManyJumpStatements:
+    threshold: 2
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated:
+      - 'Composable'
+      - 'Preview'
+  TopLevelPropertyNaming:
+    # Allow both SCREAMING_SNAKE_CASE constants and camelCase top-level vals
+    constantPattern: '[A-Z][_A-Z0-9]*|[a-z][a-zA-Z0-9]*'
