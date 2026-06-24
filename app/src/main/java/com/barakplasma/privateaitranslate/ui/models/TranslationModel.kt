@@ -38,6 +38,7 @@ import com.barakplasma.privateaitranslate.db.obj.HistoryItemType
 import com.barakplasma.privateaitranslate.ext.toastFromMainThread
 import com.barakplasma.privateaitranslate.util.JsonHelper
 import com.barakplasma.privateaitranslate.util.Preferences
+import com.barakplasma.privateaitranslate.util.MlKitOcrHelper
 import com.barakplasma.privateaitranslate.util.TessHelper
 import java.io.File
 import kotlinx.coroutines.Dispatchers
@@ -358,14 +359,21 @@ class TranslationModel : ViewModel() {
     }
 
     fun processImage(context: Context, image: Bitmap) = viewModelScope.launch {
-        if (!TessHelper.areLanguagesDownloaded(context)) {
-            context.toastFromMainThread(R.string.init_tess_first)
-            return@launch
-        }
+        // Try ML Kit OCR first (full flavor); stub returns null in noInternet flavor
+        val ocrResult: Pair<String, Map<Rect, String>>? =
+            withContext(Dispatchers.IO) { MlKitOcrHelper.getText(image) }
+                ?: run {
+                    // ML Kit unavailable — fall back to Tesseract
+                    if (!TessHelper.areLanguagesDownloaded(context)) {
+                        context.toastFromMainThread(R.string.init_tess_first)
+                        return@launch
+                    }
+                    withContext(Dispatchers.IO) { TessHelper.getText(context, image) }
+                }
 
         withContext(Dispatchers.IO) {
             // in the beginning, only show the detected texts and not its translation
-            annotatedBitmap = TessHelper.getText(context, image)?.let { (text, components) ->
+            annotatedBitmap = ocrResult?.let { (text, components) ->
                 AnnotatedBitmap(
                     image = image,
                     components = components,
@@ -387,7 +395,7 @@ class TranslationModel : ViewModel() {
                 }
             }.awaitAll().filterNotNull().toMap()
             annotatedBitmap = annotatedBitmap?.copy(components = translatedComponents)
-             annotatedBitmapTranslationsLoading = false
+            annotatedBitmapTranslationsLoading = false
         }
     }
 

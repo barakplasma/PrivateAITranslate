@@ -132,6 +132,10 @@ dependencies {
     "fullImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
     "noInternetImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
 
+    // ML Kit Text Recognition (OCR) — excluded from pureOffline (no Google Play)
+    "fullImplementation"("com.google.mlkit:text-recognition:16.0.1")
+    "noInternetImplementation"("com.google.mlkit:text-recognition:16.0.1")
+
     // LiteRT-LM on-device LLM inference — no telemetry, included in all flavors
     implementation("com.google.ai.edge.litertlm:litertlm-android:0.13.1")
 
