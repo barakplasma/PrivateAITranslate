@@ -49,8 +49,8 @@ jobs:
             mv "${{ steps.sign.outputs.signedFile }}" "app-release.apk"
           else
             echo "No production keystore secret set — using committed debug signing key for consistent APK signatures."
-            APKSIGNER=$(find $ANDROID_HOME/build-tools -name "apksigner" | sort -r | head -n 1)
-            $APKSIGNER sign --ks app/debug-signing.keystore --ks-pass pass:android123 --ks-key-alias privateaitranslate --key-pass pass:android123 app/build/outputs/apk/full/release/app-full-release-unsigned.apk
+            APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name "apksigner" | sort -r | head -n 1)
+            "$APKSIGNER" sign --ks app/debug-signing.keystore --ks-pass pass:android123 --ks-key-alias privateaitranslate --key-pass pass:android123 app/build/outputs/apk/full/release/app-full-release-unsigned.apk
             mv app/build/outputs/apk/full/release/app-full-release-unsigned.apk "app-release.apk"
           fi
 
@@ -112,8 +112,8 @@ jobs:
             mv "${{ steps.sign.outputs.signedFile }}" "app-release-no-internet.apk"
           else
             echo "No production keystore secret set — using committed debug signing key for consistent APK signatures."
-            APKSIGNER=$(find $ANDROID_HOME/build-tools -name "apksigner" | sort -r | head -n 1)
-            $APKSIGNER sign --ks app/debug-signing.keystore --ks-pass pass:android123 --ks-key-alias privateaitranslate --key-pass pass:android123 app/build/outputs/apk/noInternet/release/app-noInternet-release-unsigned.apk
+            APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name "apksigner" | sort -r | head -n 1)
+            "$APKSIGNER" sign --ks app/debug-signing.keystore --ks-pass pass:android123 --ks-key-alias privateaitranslate --key-pass pass:android123 app/build/outputs/apk/noInternet/release/app-noInternet-release-unsigned.apk
             mv app/build/outputs/apk/noInternet/release/app-noInternet-release-unsigned.apk "app-release-no-internet.apk"
           fi
 
@@ -164,8 +164,8 @@ jobs:
             mv "${{ steps.sign.outputs.signedFile }}" "app-release-pure-offline.apk"
           else
             echo "No production keystore secret set — using committed debug signing key for consistent APK signatures."
-            APKSIGNER=$(find $ANDROID_HOME/build-tools -name "apksigner" | sort -r | head -n 1)
-            $APKSIGNER sign --ks app/debug-signing.keystore --ks-pass pass:android123 --ks-key-alias privateaitranslate --key-pass pass:android123 app/build/outputs/apk/pureOffline/release/app-pureOffline-release-unsigned.apk
+            APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name "apksigner" | sort -r | head -n 1)
+            "$APKSIGNER" sign --ks app/debug-signing.keystore --ks-pass pass:android123 --ks-key-alias privateaitranslate --key-pass pass:android123 app/build/outputs/apk/pureOffline/release/app-pureOffline-release-unsigned.apk
             mv app/build/outputs/apk/pureOffline/release/app-pureOffline-release-unsigned.apk "app-release-pure-offline.apk"
           fi
 
