@@ -25,6 +25,16 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.tasks.await
 
 object MlKitOcrHelper {
+    // Languages whose scripts the bundled Latin recognizer cannot read.
+    // These must go through Tesseract instead.
+    private val NON_LATIN_SCRIPTS = setOf(
+        "ar", "bn", "fa", "gu", "he", "hi", "hy", "ja",
+        "ka", "km", "kn", "ko", "ml", "mr", "my", "ta",
+        "te", "th", "ur", "zh", "zh-TW"
+    )
+
+    fun supportsLanguage(langCode: String): Boolean = langCode !in NON_LATIN_SCRIPTS
+
     suspend fun getText(bitmap: Bitmap): Pair<String, Map<Rect, String>>? {
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         return try {

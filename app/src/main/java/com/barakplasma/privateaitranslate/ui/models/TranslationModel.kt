@@ -359,25 +359,35 @@ class TranslationModel : ViewModel() {
     }
 
     fun processImage(context: Context, image: Bitmap) = viewModelScope.launch {
-        // Try ML Kit OCR first (full/noInternet flavors); stub returns null in pureOffline flavor.
-        // null = ML Kit unavailable; empty regions = ML Kit ran but found no text.
+        // Non-Latin scripts (Hebrew, Arabic, CJK, etc.) are not supported by the bundled ML Kit
+        // Latin recognizer — route them straight to Tesseract so the user gets a clear prompt.
         val ocrResult: Pair<String, Map<Rect, String>>? =
-            withContext(Dispatchers.IO) { MlKitOcrHelper.getText(image) }
-                ?.let { result ->
-                    // ML Kit ran — if no text found and Tesseract is ready, let it try
-                    if (result.second.isEmpty() && TessHelper.areLanguagesDownloaded(context)) {
-                        withContext(Dispatchers.IO) { TessHelper.getText(context, image) }
-                    } else {
-                        result
-                    }
-                } ?: run {
-                    // ML Kit unavailable (pureOffline) — fall back to Tesseract
-                    if (!TessHelper.areLanguagesDownloaded(context)) {
-                        context.toastFromMainThread(R.string.init_tess_first)
-                        return@launch
-                    }
-                    withContext(Dispatchers.IO) { TessHelper.getText(context, image) }
+            if (!MlKitOcrHelper.supportsLanguage(sourceLanguage.code)) {
+                if (!TessHelper.areLanguagesDownloaded(context)) {
+                    context.toastFromMainThread(R.string.init_tess_first)
+                    return@launch
                 }
+                withContext(Dispatchers.IO) { TessHelper.getText(context, image) }
+            } else {
+                // ML Kit OCR first (full/noInternet); stub returns null in pureOffline.
+                // null = ML Kit unavailable; empty regions = ML Kit ran but found no text.
+                withContext(Dispatchers.IO) { MlKitOcrHelper.getText(image) }
+                    ?.let { result ->
+                        // ML Kit ran — if no text found and Tesseract is ready, let it try
+                        if (result.second.isEmpty() && TessHelper.areLanguagesDownloaded(context)) {
+                            withContext(Dispatchers.IO) { TessHelper.getText(context, image) }
+                        } else {
+                            result
+                        }
+                    } ?: run {
+                        // ML Kit unavailable (pureOffline) — fall back to Tesseract
+                        if (!TessHelper.areLanguagesDownloaded(context)) {
+                            context.toastFromMainThread(R.string.init_tess_first)
+                            return@launch
+                        }
+                        withContext(Dispatchers.IO) { TessHelper.getText(context, image) }
+                    }
+            }
 
         withContext(Dispatchers.IO) {
             // in the beginning, only show the detected texts and not its translation

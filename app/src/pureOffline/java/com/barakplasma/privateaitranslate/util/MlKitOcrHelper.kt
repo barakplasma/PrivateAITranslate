@@ -21,6 +21,8 @@ import android.graphics.Bitmap
 import android.graphics.Rect
 
 object MlKitOcrHelper {
+    fun supportsLanguage(langCode: String): Boolean = false
+
     @Suppress("UNUSED_PARAMETER")
     suspend fun getText(bitmap: Bitmap): Pair<String, Map<Rect, String>>? = null
 }
