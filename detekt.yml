@@ -61,10 +61,12 @@ style:
   ExplicitItLambdaParameter:
     active: false # idiomatic Kotlin; lambda receivers are self-describing
   ForbiddenComment:
-    active: false # TODO/FIXME comments are tracked in the issue tracker
+    active: false # these comments are tracked in the issue tracker
   UnusedPrivateMember:
     ignoreAnnotated:
       - 'Preview'
+  LoopWithTooManyJumpStatements:
+    max: 2
 
 naming:
   FunctionNaming:
@@ -74,7 +76,3 @@ naming:
   TopLevelPropertyNaming:
     # Allow both SCREAMING_SNAKE_CASE constants and camelCase top-level vals
     constantPattern: '[A-Z][_A-Z0-9]*|[a-z][a-zA-Z0-9]*'
-
-complexity:
-  LoopWithTooManyJumpStatements:
-    max: 2
