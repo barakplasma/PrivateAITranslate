@@ -66,7 +66,7 @@ style:
     ignoreAnnotated:
       - 'Preview'
   LoopWithTooManyJumpStatements:
-    max: 2
+    maxJumpCount: 2
 
 naming:
   FunctionNaming:
