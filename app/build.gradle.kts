@@ -84,10 +84,10 @@ android {
 
     sourceSets {
         getByName("full") {
-            java.srcDirs("src/full/java", "src/sharedMlKit/java")
+            java.srcDir("src/sharedMlKit/java")
         }
         getByName("noInternet") {
-            java.srcDirs("src/noInternet/java", "src/sharedMlKit/java")
+            java.srcDir("src/sharedMlKit/java")
         }
     }
 }
