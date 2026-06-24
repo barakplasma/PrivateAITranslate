@@ -135,6 +135,14 @@ dependencies {
     // ML Kit Text Recognition (OCR) — excluded from pureOffline (no Google Play)
     "fullImplementation"("com.google.mlkit:text-recognition:16.0.1")
     "noInternetImplementation"("com.google.mlkit:text-recognition:16.0.1")
+    "fullImplementation"("com.google.mlkit:text-recognition-chinese:16.0.1")
+    "noInternetImplementation"("com.google.mlkit:text-recognition-chinese:16.0.1")
+    "fullImplementation"("com.google.mlkit:text-recognition-japanese:16.0.1")
+    "noInternetImplementation"("com.google.mlkit:text-recognition-japanese:16.0.1")
+    "fullImplementation"("com.google.mlkit:text-recognition-korean:16.0.1")
+    "noInternetImplementation"("com.google.mlkit:text-recognition-korean:16.0.1")
+    "fullImplementation"("com.google.mlkit:text-recognition-devanagari:16.0.1")
+    "noInternetImplementation"("com.google.mlkit:text-recognition-devanagari:16.0.1")
 
     // LiteRT-LM on-device LLM inference — no telemetry, included in all flavors
     implementation("com.google.ai.edge.litertlm:litertlm-android:0.13.1")

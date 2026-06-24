@@ -24,5 +24,5 @@ object MlKitOcrHelper {
     fun supportsLanguage(langCode: String): Boolean = false
 
     @Suppress("UNUSED_PARAMETER")
-    suspend fun getText(bitmap: Bitmap): Pair<String, Map<Rect, String>>? = null
+    suspend fun getText(bitmap: Bitmap, langCode: String = ""): Pair<String, Map<Rect, String>>? = null
 }

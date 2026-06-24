@@ -21,20 +21,33 @@ import android.graphics.Bitmap
 import android.graphics.Rect
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.TextRecognizer
+import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
+import com.google.mlkit.vision.text.devanagari.DevanagariTextRecognizerOptions
+import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
+import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.tasks.await
 
 object MlKitOcrHelper {
-    private val NON_LATIN_SCRIPTS = setOf(
-        "ar", "bn", "fa", "gu", "he", "hi", "hy", "ja",
-        "ka", "km", "kn", "ko", "ml", "mr", "my", "ta",
-        "te", "th", "ur", "zh", "zh-TW"
+    // Languages with no ML Kit v2 recognizer — must use Tesseract instead.
+    private val UNSUPPORTED_SCRIPTS = setOf(
+        "ar", "fa", "he", "hy",
+        "bn", "gu", "ka", "km", "kn", "ml", "my", "ta", "te", "th", "ur"
     )
 
-    fun supportsLanguage(langCode: String): Boolean = langCode !in NON_LATIN_SCRIPTS
+    fun supportsLanguage(langCode: String): Boolean = langCode !in UNSUPPORTED_SCRIPTS
 
-    suspend fun getText(bitmap: Bitmap): Pair<String, Map<Rect, String>>? {
-        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    private fun recognizerFor(langCode: String): TextRecognizer = when (langCode) {
+        "zh", "zh-TW" -> TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
+        "ja" -> TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
+        "ko" -> TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
+        "hi", "mr" -> TextRecognition.getClient(DevanagariTextRecognizerOptions.Builder().build())
+        else -> TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    }
+
+    suspend fun getText(bitmap: Bitmap, langCode: String = ""): Pair<String, Map<Rect, String>>? {
+        val recognizer = recognizerFor(langCode)
         return try {
             val image = InputImage.fromBitmap(bitmap, 0)
             val result = recognizer.process(image).await()

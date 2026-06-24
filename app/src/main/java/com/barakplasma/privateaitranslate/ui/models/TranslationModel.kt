@@ -371,7 +371,7 @@ class TranslationModel : ViewModel() {
             } else {
                 // ML Kit OCR first (full/noInternet); stub returns null in pureOffline.
                 // null = ML Kit unavailable; empty regions = ML Kit ran but found no text.
-                withContext(Dispatchers.IO) { MlKitOcrHelper.getText(image) }
+                withContext(Dispatchers.IO) { MlKitOcrHelper.getText(image, sourceLanguage.code) }
                     ?.let { result ->
                         // ML Kit ran — if no text found and Tesseract is ready, let it try
                         if (result.second.isEmpty() && TessHelper.areLanguagesDownloaded(context)) {
