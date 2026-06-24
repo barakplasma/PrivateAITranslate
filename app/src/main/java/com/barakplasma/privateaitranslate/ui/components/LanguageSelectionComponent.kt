@@ -36,7 +36,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.barakplasma.privateaitranslate.R
@@ -45,7 +44,6 @@ import com.barakplasma.privateaitranslate.ui.models.TranslationModel
 @Composable
 fun LanguageSelectionComponent(viewModel: TranslationModel) {
     val orientation = LocalConfiguration.current.orientation
-    val context = LocalContext.current
 
     if (orientation == Configuration.ORIENTATION_PORTRAIT) {
         Row(
@@ -138,7 +136,6 @@ fun LanguageSelectionComponent(viewModel: TranslationModel) {
 
 @Composable
 fun SwapLanguagesButton(viewModel: TranslationModel) {
-    val context = LocalContext.current
     var switchBtnEnabled by remember {
         mutableStateOf(false)
     }

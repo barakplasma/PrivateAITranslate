@@ -6,6 +6,8 @@ on:
     tags:
       - 'v*.*'
 
+permissions: {}
+
 jobs:
   build:
     name: Build, sign and release app
@@ -13,10 +15,12 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4 # zizmor: ignore[cache-poisoning]
         with:
           distribution: "zulu"
           java-version: "17"
@@ -29,7 +33,7 @@ jobs:
         env:
           KEYSTORE: ${{ secrets.KEYSTORE }}
         if: ${{ env.KEYSTORE != '' }}
-        uses: ilharp/sign-android-release@v1
+        uses: ilharp/sign-android-release@2034987c31e3959f7c97e88d5e656e52e6e88bd8 # v1
         id: sign
         with:
           releaseDir: app/build/outputs/apk/full/release
@@ -42,13 +46,14 @@ jobs:
       - name: Rename and Sign APK
         env:
           KEYSTORE: ${{ secrets.KEYSTORE }}
+          SIGNED_FILE: ${{ steps.sign.outputs.signedFile }}
         run: |
-          if [ "${{ env.KEYSTORE }}" != "" ]; then
-            mv "${{ steps.sign.outputs.signedFile }}" "app-release.apk"
+          if [ "$KEYSTORE" != "" ]; then
+            mv "$SIGNED_FILE" "app-release.apk"
           else
             echo "No production keystore secret set — using committed debug signing key for consistent APK signatures."
-            APKSIGNER=$(find $ANDROID_HOME/build-tools -name "apksigner" | sort -r | head -n 1)
-            $APKSIGNER sign --ks app/debug-signing.keystore --ks-pass pass:android123 --ks-key-alias privateaitranslate --key-pass pass:android123 app/build/outputs/apk/full/release/app-full-release-unsigned.apk
+            APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name "apksigner" | sort -r | head -n 1)
+            "$APKSIGNER" sign --ks app/debug-signing.keystore --ks-pass pass:android123 --ks-key-alias privateaitranslate --key-pass pass:android123 app/build/outputs/apk/full/release/app-full-release-unsigned.apk
             mv app/build/outputs/apk/full/release/app-full-release-unsigned.apk "app-release.apk"
           fi
 
@@ -56,13 +61,13 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         id: changelog
         continue-on-error: true
-        uses: requarks/changelog-action@v1
+        uses: requarks/changelog-action@b78a3354a01f4a1affb484b9264b506a815c46b1 # v1
         with:
           token: ${{ github.token }}
           tag: ${{ github.ref_name }}
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2 # zizmor: ignore[superfluous-actions]
         with:
           tag_name: ${{ github.ref_name }}
           body: ${{ steps.changelog.outputs.changes || 'Manual release build' }}
@@ -76,10 +81,12 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4 # zizmor: ignore[cache-poisoning]
         with:
           distribution: "zulu"
           java-version: "17"
@@ -92,7 +99,7 @@ jobs:
         env:
           KEYSTORE: ${{ secrets.KEYSTORE }}
         if: ${{ env.KEYSTORE != '' }}
-        uses: ilharp/sign-android-release@v1
+        uses: ilharp/sign-android-release@2034987c31e3959f7c97e88d5e656e52e6e88bd8 # v1
         id: sign
         with:
           releaseDir: app/build/outputs/apk/noInternet/release
@@ -105,18 +112,19 @@ jobs:
       - name: Rename and Sign APK
         env:
           KEYSTORE: ${{ secrets.KEYSTORE }}
+          SIGNED_FILE: ${{ steps.sign.outputs.signedFile }}
         run: |
-          if [ "${{ env.KEYSTORE }}" != "" ]; then
-            mv "${{ steps.sign.outputs.signedFile }}" "app-release-no-internet.apk"
+          if [ "$KEYSTORE" != "" ]; then
+            mv "$SIGNED_FILE" "app-release-no-internet.apk"
           else
             echo "No production keystore secret set — using committed debug signing key for consistent APK signatures."
-            APKSIGNER=$(find $ANDROID_HOME/build-tools -name "apksigner" | sort -r | head -n 1)
-            $APKSIGNER sign --ks app/debug-signing.keystore --ks-pass pass:android123 --ks-key-alias privateaitranslate --key-pass pass:android123 app/build/outputs/apk/noInternet/release/app-noInternet-release-unsigned.apk
+            APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name "apksigner" | sort -r | head -n 1)
+            "$APKSIGNER" sign --ks app/debug-signing.keystore --ks-pass pass:android123 --ks-key-alias privateaitranslate --key-pass pass:android123 app/build/outputs/apk/noInternet/release/app-noInternet-release-unsigned.apk
             mv app/build/outputs/apk/noInternet/release/app-noInternet-release-unsigned.apk "app-release-no-internet.apk"
           fi
 
       - name: Upload no-internet APK to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2 # zizmor: ignore[superfluous-actions]
         with:
           tag_name: ${{ github.ref_name }}
           files: "app-release-no-internet.apk"
@@ -128,10 +136,12 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4 # zizmor: ignore[cache-poisoning]
         with:
           distribution: "zulu"
           java-version: "17"
@@ -144,7 +154,7 @@ jobs:
         env:
           KEYSTORE: ${{ secrets.KEYSTORE }}
         if: ${{ env.KEYSTORE != '' }}
-        uses: ilharp/sign-android-release@v1
+        uses: ilharp/sign-android-release@2034987c31e3959f7c97e88d5e656e52e6e88bd8 # v1
         id: sign
         with:
           releaseDir: app/build/outputs/apk/pureOffline/release
@@ -157,18 +167,19 @@ jobs:
       - name: Rename and Sign APK
         env:
           KEYSTORE: ${{ secrets.KEYSTORE }}
+          SIGNED_FILE: ${{ steps.sign.outputs.signedFile }}
         run: |
-          if [ "${{ env.KEYSTORE }}" != "" ]; then
-            mv "${{ steps.sign.outputs.signedFile }}" "app-release-pure-offline.apk"
+          if [ "$KEYSTORE" != "" ]; then
+            mv "$SIGNED_FILE" "app-release-pure-offline.apk"
           else
             echo "No production keystore secret set — using committed debug signing key for consistent APK signatures."
-            APKSIGNER=$(find $ANDROID_HOME/build-tools -name "apksigner" | sort -r | head -n 1)
-            $APKSIGNER sign --ks app/debug-signing.keystore --ks-pass pass:android123 --ks-key-alias privateaitranslate --key-pass pass:android123 app/build/outputs/apk/pureOffline/release/app-pureOffline-release-unsigned.apk
+            APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name "apksigner" | sort -r | head -n 1)
+            "$APKSIGNER" sign --ks app/debug-signing.keystore --ks-pass pass:android123 --ks-key-alias privateaitranslate --key-pass pass:android123 app/build/outputs/apk/pureOffline/release/app-pureOffline-release-unsigned.apk
             mv app/build/outputs/apk/pureOffline/release/app-pureOffline-release-unsigned.apk "app-release-pure-offline.apk"
           fi
 
       - name: Upload pure-offline APK to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2 # zizmor: ignore[superfluous-actions]
         with:
           tag_name: ${{ github.ref_name }}
           files: "app-release-pure-offline.apk"

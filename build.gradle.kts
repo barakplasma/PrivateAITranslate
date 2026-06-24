@@ -9,4 +9,4 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.7" apply false
 }
 
-extra["compose_version"] = "1.8.3"
+extra["composeVersion"] = "1.8.3"

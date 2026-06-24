@@ -1,0 +1,27 @@
+# MegaLinter configuration
+# https://megalinter.io/latest/configuration/
+
+VALIDATE_ALL_CODEBASE: false
+APPLY_FIXES: all
+
+# Allow zizmor to call GitHub API for branch resolution
+ACTION_ZIZMOR_UNSECURED_ENV_VARIABLES:
+  - GITHUB_TOKEN
+
+# jscpd: Android flavor source sets intentionally duplicate files per-flavor.
+# The threshold is set above the inherent duplication level of the project.
+COPYPASTE_JSCPD_ARGUMENTS: --threshold 10
+
+# devskim: false positives on standard Android XML namespace declarations
+# and Room schema hash values
+REPOSITORY_DEVSKIM_DISABLE_ERRORS: true
+
+# kingfisher: false positive on ephemeral GitHub Actions token in .git/config
+REPOSITORY_KINGFISHER_DISABLE_ERRORS: true
+
+# osv-scanner: no supported lock file format for Gradle in this version
+REPOSITORY_OSV_SCANNER_DISABLE_ERRORS: true
+
+# detekt: use project config with --build-upon-default-config to tune noisy
+# rules (NewLineAtEndOfFile handled by ktlint, MagicNumber thresholds, etc.)
+KOTLIN_DETEKT_ARGUMENTS: --build-upon-default-config --config detekt.yml

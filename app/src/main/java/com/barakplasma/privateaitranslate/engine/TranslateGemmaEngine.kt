@@ -140,10 +140,11 @@ class TranslateGemmaEngine(
             return Pair(backendName, backend)
         }
 
-        throw IllegalStateException("All translation backends failed. Device may not support TranslateGemma.")
+        error("All translation backends failed. Device may not support TranslateGemma.")
     }
 
     @Synchronized
+    @Suppress("UseCheckOrError") // catch-rethrow blocks need cause parameter; error() does not support it
     private fun getOrCreateEngine(): Engine {
         liveEngine?.let { return it }
 
@@ -154,7 +155,7 @@ class TranslateGemmaEngine(
 
         // Validate model file size (minimum ~1.5GB for 2GB quantized model)
         val minModelSize = 1_500_000_000L
-        val modelSizeGB = String.format("%.2f", modelFile.length() / 1_000_000_000.0)
+        val modelSizeGB = String.format(java.util.Locale.ROOT, "%.2f", modelFile.length() / 1_000_000_000.0)
         check(modelFile.length() >= minModelSize) {
             "TranslateGemma model appears corrupted or incomplete ($modelSizeGB GB, expected >1.5 GB). Delete and re-download."
         }
@@ -195,9 +196,10 @@ class TranslateGemmaEngine(
 
     override suspend fun getLanguages(): List<Language> = SUPPORTED_LANGUAGES
 
+    @Suppress("UseCheckOrError") // catch-rethrow blocks need cause parameter; error() does not support it
     override suspend fun translate(query: String, source: String, target: String): Translation {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            throw IllegalStateException("TranslateGemma requires Android 12 (API 31) or higher")
+            error("TranslateGemma requires Android 12 (API 31) or higher")
         }
 
         val engine = getOrCreateEngine()
@@ -237,7 +239,7 @@ class TranslateGemmaEngine(
 
             val result = sb.toString().trim()
             if (result.isEmpty()) {
-                throw IllegalStateException("Translation resulted in empty output. The model may not have generated a response.")
+                error("Translation resulted in empty output. The model may not have generated a response.")
             }
             Translation(translatedText = result)
         } catch (e: OutOfMemoryError) {

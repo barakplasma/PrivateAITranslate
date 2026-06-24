@@ -81,10 +81,11 @@ android {
         }
     }
     namespace = "com.barakplasma.privateaitranslate"
+
 }
 
 dependencies {
-    val compose_version: String by rootProject.extra
+    val composeVersion: String by rootProject.extra
     // Android Core
     implementation("androidx.core:core-ktx:1.16.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.1")
@@ -95,14 +96,14 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 
     // Compose
-    implementation("androidx.compose.ui:ui:$compose_version")
-    implementation("androidx.compose.ui:ui-tooling-preview:$compose_version")
+    implementation("androidx.compose.ui:ui:$composeVersion")
+    implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.1")
     implementation("androidx.compose.material3:material3:1.3.2")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:$compose_version")
-    debugImplementation("androidx.compose.ui:ui-tooling:$compose_version")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:$compose_version")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
+    debugImplementation("androidx.compose.ui:ui-tooling:$composeVersion")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     implementation("androidx.navigation:navigation-compose:2.9.7")
     implementation("com.materialkolor:material-kolor:3.0.1")
 
