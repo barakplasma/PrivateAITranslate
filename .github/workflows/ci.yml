@@ -42,6 +42,12 @@ jobs:
           OPENAI_BASE_URL: https://openrouter.ai/api/v1
           OPENAI_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
+      - name: Upload MegaLinter scan results to GitHub Security tab
+        if: success() || failure()
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+            sarif_file: 'megalinter-reports/megalinter-report.sarif'
+
   debug-builds:
     runs-on: ubuntu-latest
     permissions:
