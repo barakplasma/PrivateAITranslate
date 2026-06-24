@@ -8,9 +8,6 @@ APPLY_FIXES: all
 ACTION_ZIZMOR_UNSECURED_ENV_VARIABLES:
   - GITHUB_TOKEN
 
-# zizmor: pinning all actions to commit SHAs is out of scope for this project
-ACTION_ZIZMOR_DISABLE_ERRORS: true
-
 # jscpd: Android flavor source sets intentionally duplicate files per-flavor.
 # The threshold is set above the inherent duplication level of the project.
 COPYPASTE_JSCPD_ARGUMENTS: --threshold 10
@@ -25,5 +22,7 @@ REPOSITORY_KINGFISHER_DISABLE_ERRORS: true
 # osv-scanner: no supported lock file format for Gradle in this version
 REPOSITORY_OSV_SCANNER_DISABLE_ERRORS: true
 
-# detekt: 400+ pre-existing style issues across the codebase; tracked separately
-KOTLIN_DETEKT_DISABLE_ERRORS: true
+# LLM provider for AI-powered suggestions (OpenRouter with auto model routing)
+LLM_PROVIDER: openai
+LLM_OPENAI_BASE_URL: https://openrouter.ai/api/v1
+LLM_OPENAI_MODEL: openrouter/auto

@@ -15,10 +15,12 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: "zulu"
           java-version: "17"
@@ -31,7 +33,7 @@ jobs:
         env:
           KEYSTORE: ${{ secrets.KEYSTORE }}
         if: ${{ env.KEYSTORE != '' }}
-        uses: ilharp/sign-android-release@v1
+        uses: ilharp/sign-android-release@2034987c31e3959f7c97e88d5e656e52e6e88bd8 # v1
         id: sign
         with:
           releaseDir: app/build/outputs/apk/full/release
@@ -58,13 +60,13 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         id: changelog
         continue-on-error: true
-        uses: requarks/changelog-action@v1
+        uses: requarks/changelog-action@b78a3354a01f4a1affb484b9264b506a815c46b1 # v1
         with:
           token: ${{ github.token }}
           tag: ${{ github.ref_name }}
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           tag_name: ${{ github.ref_name }}
           body: ${{ steps.changelog.outputs.changes || 'Manual release build' }}
@@ -78,10 +80,12 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: "zulu"
           java-version: "17"
@@ -94,7 +98,7 @@ jobs:
         env:
           KEYSTORE: ${{ secrets.KEYSTORE }}
         if: ${{ env.KEYSTORE != '' }}
-        uses: ilharp/sign-android-release@v1
+        uses: ilharp/sign-android-release@2034987c31e3959f7c97e88d5e656e52e6e88bd8 # v1
         id: sign
         with:
           releaseDir: app/build/outputs/apk/noInternet/release
@@ -118,7 +122,7 @@ jobs:
           fi
 
       - name: Upload no-internet APK to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           tag_name: ${{ github.ref_name }}
           files: "app-release-no-internet.apk"
@@ -130,10 +134,12 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: "zulu"
           java-version: "17"
@@ -146,7 +152,7 @@ jobs:
         env:
           KEYSTORE: ${{ secrets.KEYSTORE }}
         if: ${{ env.KEYSTORE != '' }}
-        uses: ilharp/sign-android-release@v1
+        uses: ilharp/sign-android-release@2034987c31e3959f7c97e88d5e656e52e6e88bd8 # v1
         id: sign
         with:
           releaseDir: app/build/outputs/apk/pureOffline/release
@@ -170,7 +176,7 @@ jobs:
           fi
 
       - name: Upload pure-offline APK to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           tag_name: ${{ github.ref_name }}
           files: "app-release-pure-offline.apk"

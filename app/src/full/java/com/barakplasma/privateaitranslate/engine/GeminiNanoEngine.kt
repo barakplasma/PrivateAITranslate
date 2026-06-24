@@ -20,6 +20,7 @@ class GeminiNanoEngine(
 
     private var model: GenerativeModel? = null
 
+    @Suppress("TooGenericExceptionCaught")
     override fun createOrRecreate(): TranslationEngine = apply {
         try {
             model = com.google.mlkit.genai.prompt.Generation.getClient()

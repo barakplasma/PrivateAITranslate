@@ -48,7 +48,8 @@ class MLKitEngine(
         target: String,
     ): Translation {
         require(source.isNotEmpty() && source != "auto") {
-            "Google ML Kit does not support automatic source language detection. Please select a specific source language."
+            "Google ML Kit does not support automatic source language detection. " +
+                "Please select a specific source language."
         }
         require(target.isNotEmpty() && target != "auto") {
             "A specific target language must be selected."
