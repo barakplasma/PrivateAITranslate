@@ -9,6 +9,8 @@ on:
       - "assets/**"
       - ".github/**/*.md"
 
+permissions: {}
+
 jobs:
   megalinter:
     name: MegaLinter
@@ -32,6 +34,8 @@ jobs:
 
   debug-builds:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
