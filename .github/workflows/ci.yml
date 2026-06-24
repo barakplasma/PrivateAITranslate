@@ -32,6 +32,9 @@ jobs:
           APPLY_FIXES_EVENT: pull_request
           APPLY_FIXES_MODE: commit
           VALIDATE_ALL_CODEBASE: false
+          LLM_PROVIDER: openai
+          LLM_OPENAI_BASE_URL: https://openrouter.ai/api/v1
+          LLM_OPENAI_MODEL: openrouter/auto
           LLM_OPENAI_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
   debug-builds:

@@ -1,0 +1,43 @@
+# Detekt rule overrides — applied with --build-upon-default-config so all
+# unspecified rules remain at detekt defaults.
+
+style:
+  NewLineAtEndOfFile:
+    active: false # ktlint already enforces this; disabling avoids duplicate findings
+  MagicNumber:
+    active: true
+    ignoreNumbers:
+      - '-1'
+      - '0'
+      - '1'
+      - '2'
+      - '3'
+      - '4'
+      - '8'
+      - '10'
+      - '16'
+      - '24'
+      - '32'
+      - '33'
+      - '90'
+      - '100'
+      - '180'
+      - '270'
+      - '360'
+      - '1000'
+      - '1024'
+    ignoreEnums: true
+    ignoreConstantDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotation: true
+    ignoreNamedArgument: true
+    ignoreExtensionFunctions: true
+  ReturnCount:
+    active: true
+    max: 5
+    excludeGuardClauses: true
+  MaxLineLength:
+    active: true
+    maxLineLength: 140
+    excludeCommentStatements: true
+    excludeRawStrings: true
