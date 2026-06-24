@@ -32,10 +32,15 @@ jobs:
           APPLY_FIXES_EVENT: pull_request
           APPLY_FIXES_MODE: commit
           VALIDATE_ALL_CODEBASE: false
-          LLM_PROVIDER: openai
-          LLM_OPENAI_BASE_URL: https://openrouter.ai/api/v1
-          LLM_OPENAI_MODEL: openrouter/auto
-          LLM_OPENAI_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          LLM_ADVISOR_ENABLED: true
+          
+          # Choose your provider and model
+          LLM_PROVIDER: openai  # openai, anthropic, google, huggingface, mistral, deepseek, grok, ollama
+          LLM_MODEL_NAME: openrouter/auto
+          LLM_MAX_TOKENS: 1000
+          LLM_TEMPERATURE: 0.1
+          OPENAI_BASE_URL: https://openrouter.ai/api/v1
+          OPENAI_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
   debug-builds:
     runs-on: ubuntu-latest
