@@ -32,9 +32,9 @@ jobs:
           APPLY_FIXES_EVENT: pull_request
           APPLY_FIXES_MODE: commit
           VALIDATE_ALL_CODEBASE: false
+          SARIF_REPORTER: true
+
           LLM_ADVISOR_ENABLED: true
-          
-          # Choose your provider and model
           LLM_PROVIDER: openai  # openai, anthropic, google, huggingface, mistral, deepseek, grok, ollama
           LLM_MODEL_NAME: openrouter/auto
           LLM_MAX_TOKENS: 1000
