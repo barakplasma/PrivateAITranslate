@@ -38,6 +38,7 @@ import com.barakplasma.privateaitranslate.db.obj.HistoryItemType
 import com.barakplasma.privateaitranslate.ext.toastFromMainThread
 import com.barakplasma.privateaitranslate.util.JsonHelper
 import com.barakplasma.privateaitranslate.util.Preferences
+import com.barakplasma.privateaitranslate.util.MlKitOcrHelper
 import com.barakplasma.privateaitranslate.util.TessHelper
 import java.io.File
 import kotlinx.coroutines.Dispatchers
@@ -357,15 +358,42 @@ class TranslationModel : ViewModel() {
         bookmarkedLanguages = Db.languageBookmarksDao().getAll().map(DbLanguage::toLanguage)
     }
 
+    // TODO: replace camera/gallery flow with ML Kit Document Scanner for better capture UX
+    //  https://developers.google.com/ml-kit/vision/doc-scanner
     fun processImage(context: Context, image: Bitmap) = viewModelScope.launch {
-        if (!TessHelper.areLanguagesDownloaded(context)) {
-            context.toastFromMainThread(R.string.init_tess_first)
-            return@launch
-        }
+        // Non-Latin scripts (Hebrew, Arabic, CJK, etc.) are not supported by the bundled ML Kit
+        // Latin recognizer — route them straight to Tesseract so the user gets a clear prompt.
+        val ocrResult: Pair<String, Map<Rect, String>>? =
+            if (!MlKitOcrHelper.supportsLanguage(sourceLanguage.code)) {
+                if (!TessHelper.areLanguagesDownloaded(context)) {
+                    context.toastFromMainThread(R.string.init_tess_first)
+                    return@launch
+                }
+                withContext(Dispatchers.IO) { TessHelper.getText(context, image) }
+            } else {
+                // ML Kit OCR first (full/noInternet); stub returns null in pureOffline.
+                // null = ML Kit unavailable; empty regions = ML Kit ran but found no text.
+                withContext(Dispatchers.IO) { MlKitOcrHelper.getText(image, sourceLanguage.code) }
+                    ?.let { result ->
+                        // ML Kit ran — if no text found and Tesseract is ready, let it try
+                        if (result.second.isEmpty() && TessHelper.areLanguagesDownloaded(context)) {
+                            withContext(Dispatchers.IO) { TessHelper.getText(context, image) }
+                        } else {
+                            result
+                        }
+                    } ?: run {
+                        // ML Kit unavailable (pureOffline) — fall back to Tesseract
+                        if (!TessHelper.areLanguagesDownloaded(context)) {
+                            context.toastFromMainThread(R.string.init_tess_first)
+                            return@launch
+                        }
+                        withContext(Dispatchers.IO) { TessHelper.getText(context, image) }
+                    }
+            }
 
         withContext(Dispatchers.IO) {
             // in the beginning, only show the detected texts and not its translation
-            annotatedBitmap = TessHelper.getText(context, image)?.let { (text, components) ->
+            annotatedBitmap = ocrResult?.let { (text, components) ->
                 AnnotatedBitmap(
                     image = image,
                     components = components,
@@ -387,7 +415,7 @@ class TranslationModel : ViewModel() {
                 }
             }.awaitAll().filterNotNull().toMap()
             annotatedBitmap = annotatedBitmap?.copy(components = translatedComponents)
-             annotatedBitmapTranslationsLoading = false
+            annotatedBitmapTranslationsLoading = false
         }
     }
 
