@@ -138,4 +138,6 @@ abstract class TranslationEngine(private val settingsProvider: EngineSettingsPro
 
         return false
     }
+
+    override fun hashCode(): Int = name.hashCode()
 }
