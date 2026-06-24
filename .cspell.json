@@ -64,6 +64,9 @@
         "Drawables",
         "artipacked",
         "openrouter",
-        "OPENROUTER"
+        "OPENROUTER",
+        "huggingface",
+        "deepseek",
+        "ollama"
     ]
 }
