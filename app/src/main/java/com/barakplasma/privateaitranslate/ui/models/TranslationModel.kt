@@ -358,6 +358,8 @@ class TranslationModel : ViewModel() {
         bookmarkedLanguages = Db.languageBookmarksDao().getAll().map(DbLanguage::toLanguage)
     }
 
+    // TODO: replace camera/gallery flow with ML Kit Document Scanner for better capture UX
+    //  https://developers.google.com/ml-kit/vision/doc-scanner
     fun processImage(context: Context, image: Bitmap) = viewModelScope.launch {
         // Non-Latin scripts (Hebrew, Arabic, CJK, etc.) are not supported by the bundled ML Kit
         // Latin recognizer — route them straight to Tesseract so the user gets a clear prompt.
