@@ -220,21 +220,19 @@ class TranslateGemmaEngine(
             activeConversation = conversation
 
             try {
-                conversation.use { conv ->
-                    val flow = conv.sendMessageAsync(prompt)
+                val flow = conversation.sendMessageAsync(prompt)
 
-                    flow.collect { chunk ->
-                        chunk?.let {
-                            try {
-                                if (sb.length < maxOutputChars) sb.append(it)
-                            } catch (e: Exception) {
-                                CrashLogger.w(TAG, "Failed to append chunk: ${e.message}", e)
-                            }
+                flow.collect { chunk ->
+                    chunk?.let {
+                        try {
+                            if (sb.length < maxOutputChars) sb.append(it)
+                        } catch (e: Exception) {
+                            CrashLogger.w(TAG, "Failed to append chunk: ${e.message}", e)
                         }
                     }
                 }
             } finally {
-                activeConversation = null
+                closeActiveConversation()
             }
 
             val result = sb.toString().trim()
