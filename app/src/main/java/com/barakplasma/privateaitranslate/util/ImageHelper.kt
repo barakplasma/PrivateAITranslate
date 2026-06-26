@@ -101,7 +101,7 @@ object ImageHelper {
             bitmap.recycle()
             return bmRotated
         } catch (e: OutOfMemoryError) {
-            e.printStackTrace()
+            Log.w("ImageHelper", "rotateBitmap: out of memory", e)
             return null
         }
     }

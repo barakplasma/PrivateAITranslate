@@ -49,7 +49,7 @@ object TessHelper {
             externalApi.getAvailableTessLanguages().tree
                 .filter { it.path.endsWith(DATA_FILE_SUFFIX) }
         } catch (e: Exception) {
-            Log.e("fetching tess languages", e.toString())
+            Log.e("fetching tess languages", "Failed to fetch available languages", e)
             return emptyList()
         }
     }

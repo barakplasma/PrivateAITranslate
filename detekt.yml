@@ -1,6 +1,28 @@
 # Detekt rule overrides — applied with --build-upon-default-config so all
 # unspecified rules remain at detekt defaults.
 
+complexity:
+  CyclomaticComplexMethod:
+    ignoredAnnotations:
+      - 'Composable'
+      - 'Preview'
+  LongMethod:
+    ignoreAnnotated:
+      - 'Composable'
+      - 'Preview'
+  LongParameterList:
+    ignoreDefaultParameters: true
+    ignoreAnnotated:
+      - 'Composable'
+      - 'Preview'
+  TooManyFunctions:
+    thresholdInClasses: 25
+    thresholdInObjects: 15
+    thresholdInInterfaces: 15
+    thresholdInFiles: 25
+  NestedBlockDepth:
+    threshold: 5
+
 style:
   NewLineAtEndOfFile:
     active: false # ktlint already enforces this; disabling avoids duplicate findings
@@ -76,3 +98,17 @@ naming:
   TopLevelPropertyNaming:
     # Allow both SCREAMING_SNAKE_CASE constants and camelCase top-level vals
     constantPattern: '[A-Z][_A-Z0-9]*|[a-z][a-zA-Z0-9]*'
+  PackageNaming:
+    # Allow underscores in package names (translation_engines module convention)
+    packagePattern: '[a-z][a-z0-9]*(\.[a-z][a-z0-9_]*)*'
+
+exceptions:
+  TooGenericExceptionCaught:
+    # Keep catching broad types at boundary/top-level handlers; only flag truly unexpected ones
+    exceptionNames:
+      - 'Error'
+      - 'Throwable'
+      - 'RuntimeException'
+  SwallowedException:
+    # Allow ignored exceptions named with underscore prefix or conventional ignore names
+    allowedExceptionNameRegex: '_|(ignore|expected|unused).*'
