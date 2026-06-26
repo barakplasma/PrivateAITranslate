@@ -25,6 +25,7 @@ import com.google.ai.edge.litertlm.ConversationConfig
 import com.google.ai.edge.litertlm.Engine
 import com.google.ai.edge.litertlm.EngineConfig
 import com.google.ai.edge.litertlm.SamplerConfig
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collect
 import net.youapps.translation_engines.ApiKeyState
 import net.youapps.translation_engines.EngineSettingsProvider
@@ -50,6 +51,7 @@ class TranslateGemmaEngine(
     override val supportedModels = listOf("CPU", "GPU")
 
     private var liveEngine: Engine? = null
+
     @Volatile private var activeConversation: AutoCloseable? = null
     private var backendAvailability: MutableMap<String, Boolean> = mutableMapOf()
 
@@ -220,21 +222,30 @@ class TranslateGemmaEngine(
             activeConversation = conversation
 
             try {
-                conversation.use { conv ->
-                    val flow = conv.sendMessageAsync(prompt)
+                val flow = conversation.sendMessageAsync(prompt)
 
-                    flow.collect { chunk ->
-                        chunk?.let {
-                            try {
-                                if (sb.length < maxOutputChars) sb.append(it)
-                            } catch (e: Exception) {
-                                CrashLogger.w(TAG, "Failed to append chunk: ${e.message}", e)
-                            }
+                flow.collect { chunk ->
+                    chunk?.let {
+                        try {
+                            if (sb.length < maxOutputChars) sb.append(it)
+                        } catch (e: Exception) {
+                            CrashLogger.w(TAG, "Failed to append chunk: ${e.message}", e)
                         }
                     }
                 }
             } finally {
-                activeConversation = null
+                // Only clear the field if it still points to *our* conversation — a concurrent
+                // translate() call may have already replaced it with a newer one.
+                synchronized(this) {
+                    if (activeConversation === conversation) {
+                        activeConversation = null
+                    }
+                }
+                try {
+                    conversation.close()
+                } catch (e: Exception) {
+                    CrashLogger.w(TAG, "Failed to close conversation: ${e.message}", e)
+                }
             }
 
             val result = sb.toString().trim()
@@ -242,6 +253,8 @@ class TranslateGemmaEngine(
                 error("Translation resulted in empty output. The model may not have generated a response.")
             }
             Translation(translatedText = result)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: OutOfMemoryError) {
             CrashLogger.e(TAG, "Translation failed: Out of memory during text generation", e)
             closeLiveEngine()

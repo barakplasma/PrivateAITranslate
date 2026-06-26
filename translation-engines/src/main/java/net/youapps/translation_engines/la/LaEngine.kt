@@ -17,14 +17,14 @@
 
 package net.youapps.translation_engines.la
 
-import net.youapps.translation_engines.la.obj.LaraTranslateRequest
-import kotlin.text.get
 import net.youapps.translation_engines.ApiKeyState
 import net.youapps.translation_engines.EngineSettingsProvider
 import net.youapps.translation_engines.Language
 import net.youapps.translation_engines.RetrofitHelper
 import net.youapps.translation_engines.Translation
 import net.youapps.translation_engines.TranslationEngine
+import net.youapps.translation_engines.la.obj.LaraTranslateRequest
+import kotlin.text.get
 
 class LaEngine(settingsProvider: EngineSettingsProvider) : TranslationEngine(settingsProvider) {
     override val name = "LaraTranslate"
@@ -59,7 +59,7 @@ class LaEngine(settingsProvider: EngineSettingsProvider) : TranslationEngine(set
             LaraTranslateRequest(q = query, source = sourceOrAuto(source), target = target)
         val translation = api.translate(requestBody)
 
-        if (translation.status != 200) throw Exception("Received error response from LaraTranslate.")
+        if (translation.status != 200) throw IllegalStateException("Received error response from LaraTranslate.")
 
         return Translation(
             translatedText = translation.content.translation,

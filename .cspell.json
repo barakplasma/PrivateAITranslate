@@ -67,6 +67,15 @@
         "OPENROUTER",
         "huggingface",
         "deepseek",
-        "ollama"
+        "ollama",
+        "Apertium",
+        "Apertum",
+        "exif",
+        "googlecode",
+        "tessdata",
+        "traineddata",
+        "TEXTLINE",
+        "automirrored",
+        "nestedscroll"
     ]
 }

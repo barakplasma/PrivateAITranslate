@@ -24,7 +24,7 @@ import retrofit2.http.Streaming
 import retrofit2.http.Url
 
 interface ExternalApi {
-    @GET(TessHelper.tessTreePath)
+    @GET(TessHelper.TESS_TREE_PATH)
     suspend fun getAvailableTessLanguages(): TessLanguageResponse
 
     @Streaming

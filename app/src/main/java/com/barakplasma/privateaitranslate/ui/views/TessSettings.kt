@@ -142,7 +142,7 @@ fun TessSettings(
                         SelectionContainer(
                             modifier = Modifier.padding(horizontal = 12.dp)
                         ) {
-                            Text(text = stringResource(R.string.tess_summary, TessHelper.tessRepoUrl))
+                            Text(text = stringResource(R.string.tess_summary, TessHelper.TESS_REPO_URL))
                         }
                         Spacer(modifier = Modifier.height(12.dp))
                     }

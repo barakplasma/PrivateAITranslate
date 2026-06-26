@@ -20,6 +20,6 @@ package net.youapps.translation_engines.ap.obj
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ApertumResponseData(
-    val translatedText: String
+data class ApertiumResponseData(
+    val translatedText: String,
 )

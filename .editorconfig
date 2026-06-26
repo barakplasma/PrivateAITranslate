@@ -3,6 +3,19 @@ root = true
 [*.kt]
 max_line_length = 250
 ktlint_function_naming_ignore_when_annotated_with = Composable,Preview
+# Rules introduced in ktlint 1.x that require a full reformat pass to adopt;
+# disabled here to avoid flagging the pre-existing codebase on every PR diff.
+ktlint_standard_trailing-comma-on-call-site = disabled
+ktlint_standard_trailing-comma-on-declaration-site = disabled
+ktlint_standard_multiline-expression-wrapping = disabled
+ktlint_standard_blank-line-between-when-conditions = disabled
+ktlint_standard_when-entry-bracing = disabled
+ktlint_standard_function-signature = disabled
+ktlint_standard_chain-method-continuation = disabled
+ktlint_standard_function-expression-body = disabled
+ktlint_standard_class-signature = disabled
+ktlint_standard_spacing-between-declarations-with-annotations = disabled
+ktlint_standard_no-multi-spaces = disabled
 
 [translation-engines/**.kt]
 ktlint_standard_package-name = disabled
