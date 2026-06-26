@@ -21,5 +21,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ApertiumResponseData(
-    val translatedText: String
+    val translatedText: String,
 )

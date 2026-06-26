@@ -22,5 +22,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ApertiumResponse(
     val responseData: ApertiumResponseData,
-    val responseStatus: Int
+    val responseStatus: Int,
 )

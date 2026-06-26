@@ -25,15 +25,15 @@ import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
-import androidx.exifinterface.media.ExifInterface
 import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.annotation.ColorInt
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.createBitmap
-import kotlin.math.absoluteValue
 import androidx.core.graphics.get
+import androidx.exifinterface.media.ExifInterface
+import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 

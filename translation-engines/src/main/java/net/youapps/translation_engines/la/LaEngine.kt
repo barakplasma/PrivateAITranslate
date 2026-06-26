@@ -17,14 +17,14 @@
 
 package net.youapps.translation_engines.la
 
-import net.youapps.translation_engines.la.obj.LaraTranslateRequest
-import kotlin.text.get
 import net.youapps.translation_engines.ApiKeyState
 import net.youapps.translation_engines.EngineSettingsProvider
 import net.youapps.translation_engines.Language
 import net.youapps.translation_engines.RetrofitHelper
 import net.youapps.translation_engines.Translation
 import net.youapps.translation_engines.TranslationEngine
+import net.youapps.translation_engines.la.obj.LaraTranslateRequest
+import kotlin.text.get
 
 class LaEngine(settingsProvider: EngineSettingsProvider) : TranslationEngine(settingsProvider) {
     override val name = "LaraTranslate"

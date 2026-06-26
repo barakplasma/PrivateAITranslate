@@ -2,10 +2,6 @@
 # unspecified rules remain at detekt defaults.
 
 complexity:
-  CyclomaticComplexMethod:
-    ignoredAnnotations:
-      - 'Composable'
-      - 'Preview'
   LongMethod:
     ignoreAnnotated:
       - 'Composable'

@@ -51,6 +51,7 @@ class TranslateGemmaEngine(
     override val supportedModels = listOf("CPU", "GPU")
 
     private var liveEngine: Engine? = null
+
     @Volatile private var activeConversation: AutoCloseable? = null
     private var backendAvailability: MutableMap<String, Boolean> = mutableMapOf()
 

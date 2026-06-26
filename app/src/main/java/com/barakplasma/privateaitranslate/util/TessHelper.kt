@@ -30,17 +30,17 @@ import com.googlecode.tesseract.android.TessBaseAPI
 import java.io.File
 
 object TessHelper {
-    private const val githubApiUrl = "https://api.github.com"
-    const val tessTreePath = "/repos/tesseract-ocr/tessdata/git/trees/main"
-    private const val baseUrl = "https://raw.githubusercontent.com/tesseract-ocr/tessdata/main"
-    const val tessRepoUrl = "https://github.com/tesseract-ocr/tessdata"
+    private const val GITHUB_API_URL = "https://api.github.com"
+    const val TESS_TREE_PATH = "/repos/tesseract-ocr/tessdata/git/trees/main"
+    private const val BASE_URL = "https://raw.githubusercontent.com/tesseract-ocr/tessdata/main"
+    const val TESS_REPO_URL = "https://github.com/tesseract-ocr/tessdata"
     const val DATA_FILE_SUFFIX = ".traineddata"
     private const val TESS_DIR = "tessdata"
 
     private const val DOWNLOAD_BUFFER_SIZE = 200 * 1024 // 200kB
 
     private val externalApi by lazy {
-        RetrofitHelper.createInstance<ExternalApi>(githubApiUrl)
+        RetrofitHelper.createInstance<ExternalApi>(GITHUB_API_URL)
     }
 
     suspend fun getAvailableLanguages(): List<TessLanguage> {
@@ -91,7 +91,7 @@ object TessHelper {
             onProgress(-1f)
             return
         }
-        val url = "$baseUrl/$languagePath"
+        val url = "$BASE_URL/$languagePath"
         val targetFile = File(getTessDir(context), languagePath)
 
         val connection = externalApi.downloadTessLanguageData(url)
