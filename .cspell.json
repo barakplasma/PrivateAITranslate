@@ -74,6 +74,8 @@
         "googlecode",
         "tessdata",
         "traineddata",
-        "TEXTLINE"
+        "TEXTLINE",
+        "automirrored",
+        "nestedscroll"
     ]
 }
