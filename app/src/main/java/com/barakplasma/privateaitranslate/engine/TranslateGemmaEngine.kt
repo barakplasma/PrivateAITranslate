@@ -233,10 +233,18 @@ class TranslateGemmaEngine(
                     }
                 }
             } finally {
-                // Always close via the synchronized helper: if a concurrent translate() call
-                // already closed this conversation, closeActiveConversation() handles the
-                // double-close safely rather than throwing "Conversation is closed already."
-                closeActiveConversation()
+                // Only clear the field if it still points to *our* conversation — a concurrent
+                // translate() call may have already replaced it with a newer one.
+                synchronized(this) {
+                    if (activeConversation === conversation) {
+                        activeConversation = null
+                    }
+                }
+                try {
+                    conversation.close()
+                } catch (e: Exception) {
+                    CrashLogger.w(TAG, "Failed to close conversation: ${e.message}", e)
+                }
             }
 
             val result = sb.toString().trim()
