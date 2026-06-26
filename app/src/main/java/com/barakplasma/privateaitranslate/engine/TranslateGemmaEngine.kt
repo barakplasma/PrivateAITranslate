@@ -25,6 +25,7 @@ import com.google.ai.edge.litertlm.ConversationConfig
 import com.google.ai.edge.litertlm.Engine
 import com.google.ai.edge.litertlm.EngineConfig
 import com.google.ai.edge.litertlm.SamplerConfig
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collect
 import net.youapps.translation_engines.ApiKeyState
 import net.youapps.translation_engines.EngineSettingsProvider
@@ -220,21 +221,22 @@ class TranslateGemmaEngine(
             activeConversation = conversation
 
             try {
-                conversation.use { conv ->
-                    val flow = conv.sendMessageAsync(prompt)
+                val flow = conversation.sendMessageAsync(prompt)
 
-                    flow.collect { chunk ->
-                        chunk?.let {
-                            try {
-                                if (sb.length < maxOutputChars) sb.append(it)
-                            } catch (e: Exception) {
-                                CrashLogger.w(TAG, "Failed to append chunk: ${e.message}", e)
-                            }
+                flow.collect { chunk ->
+                    chunk?.let {
+                        try {
+                            if (sb.length < maxOutputChars) sb.append(it)
+                        } catch (e: Exception) {
+                            CrashLogger.w(TAG, "Failed to append chunk: ${e.message}", e)
                         }
                     }
                 }
             } finally {
-                activeConversation = null
+                // Always close via the synchronized helper: if a concurrent translate() call
+                // already closed this conversation, closeActiveConversation() handles the
+                // double-close safely rather than throwing "Conversation is closed already."
+                closeActiveConversation()
             }
 
             val result = sb.toString().trim()
@@ -242,6 +244,8 @@ class TranslateGemmaEngine(
                 error("Translation resulted in empty output. The model may not have generated a response.")
             }
             Translation(translatedText = result)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: OutOfMemoryError) {
             CrashLogger.e(TAG, "Translation failed: Out of memory during text generation", e)
             closeLiveEngine()
