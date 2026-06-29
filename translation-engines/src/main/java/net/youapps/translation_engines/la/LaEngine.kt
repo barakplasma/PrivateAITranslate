@@ -59,7 +59,7 @@ class LaEngine(settingsProvider: EngineSettingsProvider) : TranslationEngine(set
             LaraTranslateRequest(q = query, source = sourceOrAuto(source), target = target)
         val translation = api.translate(requestBody)
 
-        if (translation.status != 200) throw IllegalStateException("Received error response from LaraTranslate.")
+        check(translation.status == 200) { "Received error response from LaraTranslate." }
 
         return Translation(
             translatedText = translation.content.translation,
