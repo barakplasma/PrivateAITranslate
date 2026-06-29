@@ -2,6 +2,10 @@ name: Build and release app
 
 on:
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag (e.g. v19.15)'
+        required: false
   push:
     tags:
       - 'v*.*'
@@ -64,12 +68,12 @@ jobs:
         uses: requarks/changelog-action@b78a3354a01f4a1affb484b9264b506a815c46b1 # v1
         with:
           token: ${{ github.token }}
-          tag: ${{ github.ref_name }}
+          tag: ${{ inputs.tag_name || github.ref_name }}
 
       - name: Create release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2 # zizmor: ignore[superfluous-actions]
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
           body: ${{ steps.changelog.outputs.changes || 'Manual release build' }}
           files: "app-release.apk"
           fail_on_unmatched_files: true
@@ -126,7 +130,7 @@ jobs:
       - name: Upload no-internet APK to release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2 # zizmor: ignore[superfluous-actions]
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
           files: "app-release-no-internet.apk"
           fail_on_unmatched_files: true
 
@@ -181,6 +185,6 @@ jobs:
       - name: Upload pure-offline APK to release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2 # zizmor: ignore[superfluous-actions]
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
           files: "app-release-pure-offline.apk"
           fail_on_unmatched_files: true
