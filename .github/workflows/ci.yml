@@ -94,7 +94,7 @@ jobs:
           persist-credentials: false
 
       - name: Download SBOM
-        uses: actions/download-artifact@v4 # zizmor: ignore[unpinned-action]
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: sbom
           path: .
@@ -118,7 +118,7 @@ jobs:
 
       - name: Upload MegaLinter scan results to GitHub Security tab
         if: success() || failure()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@45775bd8235c68ba998cffa5171334d58593da47 # v3.28.15
         with:
             sarif_file: 'megalinter-reports/megalinter-report.sarif'
 

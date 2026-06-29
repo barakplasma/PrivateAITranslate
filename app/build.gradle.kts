@@ -84,6 +84,14 @@ android {
 
 }
 
+// Force the Android-flavored Guava to fix GHSA-5mg8-w23w-74h3 and GHSA-7g45-4rm6-3mm3
+// (transitive deps pull in the vulnerable guava:31.0.1-jre)
+configurations.all {
+    resolutionStrategy {
+        force("com.google.guava:guava:33.4.8-android")
+    }
+}
+
 dependencies {
     val composeVersion: String by rootProject.extra
     // Android Core
