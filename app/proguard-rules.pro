@@ -12,12 +12,12 @@
 #   public *;
 #}
 
+# Keep class/method/field names so Bugsink crash reports are human-readable.
+# R8 still shrinks (removes unused code) — only renaming is disabled.
+-dontobfuscate
+
 # Preserve line number information for debugging stack traces in Bugsink.
 -keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
 
 -keep class net.youapps.translation_engines.** { *; }
 
