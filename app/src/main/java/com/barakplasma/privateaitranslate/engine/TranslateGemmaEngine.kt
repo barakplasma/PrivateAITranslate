@@ -223,12 +223,15 @@ class TranslateGemmaEngine(
             // Close any session left open by a cancelled/interrupted prior translation
             // before creating a new one — the engine only supports one session at a time.
             closeActiveConversation()
-            // Guard against closeLiveEngine() racing between getOrCreateEngine() and here:
-            // if the engine was invalidated concurrently, bail out cleanly instead of
-            // hitting native code (createConversation) on a freed Engine object.
-            if (!engineValid) throw CancellationException("Engine was closed before conversation could be created")
-            val conversation = engine.createConversation(convConfig)
-            activeConversation = conversation
+            // Hold the same lock as closeLiveEngine() for the check-and-create block so
+            // there is no window between validating engineValid and calling the native
+            // createConversation() — both run under the same monitor.
+            val conversation = synchronized(this) {
+                if (!engineValid) throw CancellationException("Engine was closed before conversation could be created")
+                val conv = engine.createConversation(convConfig)
+                activeConversation = conv
+                conv
+            }
 
             try {
                 val flow = conversation.sendMessageAsync(prompt)
