@@ -12,6 +12,10 @@ ACTION_ZIZMOR_UNSECURED_ENV_VARIABLES:
 # The threshold is set above the inherent duplication level of the project.
 COPYPASTE_JSCPD_ARGUMENTS: --threshold 10
 
+# checkov: CKV_GHA_7 flags workflow_dispatch inputs; tag_name only sets the
+# release label — build artifacts are identical regardless of the input value
+REPOSITORY_CHECKOV_ARGUMENTS: --skip-check CKV_GHA_7
+
 # devskim: false positives on standard Android XML namespace declarations
 # and Room schema hash values
 REPOSITORY_DEVSKIM_DISABLE_ERRORS: true

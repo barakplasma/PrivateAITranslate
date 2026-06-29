@@ -1,4 +1,3 @@
-# checkov:skip=CKV_GHA_7: tag_name only sets the GitHub release label; build artifacts are identical regardless of input
 name: Build and release app
 
 on:
