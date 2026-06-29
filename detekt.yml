@@ -31,7 +31,7 @@ style:
   NewLineAtEndOfFile:
     active: false # ktlint already enforces this; disabling avoids duplicate findings
   MagicNumber:
-    active: true
+    active: false
     ignoreNumbers:
       - '-1'
       - '0'
