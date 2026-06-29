@@ -53,6 +53,7 @@ class TranslateGemmaEngine(
     private var liveEngine: Engine? = null
 
     @Volatile private var activeConversation: AutoCloseable? = null
+    @Volatile private var engineValid = false
     private var backendAvailability: MutableMap<String, Boolean> = mutableMapOf()
 
     override fun createOrRecreate(): TranslationEngine = apply {
@@ -72,6 +73,9 @@ class TranslateGemmaEngine(
 
     @Synchronized
     private fun closeLiveEngine() {
+        // Signal before any native teardown so in-flight collect() loops can exit via
+        // CancellationException rather than hitting native code on a freed engine/session.
+        engineValid = false
         // Close active conversation first — closing the Engine while a session is open
         // can orphan the native session, causing FAILED_PRECONDITION on the next createConversation.
         closeActiveConversation()
@@ -179,6 +183,7 @@ class TranslateGemmaEngine(
             engine.initialize()
             if (backendName == "GPU") setGpuCrashGuard(false) // GPU init succeeded; clear guard
             liveEngine = engine
+            engineValid = true
             CrashLogger.i(TAG, "Engine initialized successfully ($backendName)")
             engine
         } catch (e: UnsatisfiedLinkError) {
@@ -218,6 +223,10 @@ class TranslateGemmaEngine(
             // Close any session left open by a cancelled/interrupted prior translation
             // before creating a new one — the engine only supports one session at a time.
             closeActiveConversation()
+            // Guard against closeLiveEngine() racing between getOrCreateEngine() and here:
+            // if the engine was invalidated concurrently, bail out cleanly instead of
+            // hitting native code (createConversation) on a freed Engine object.
+            if (!engineValid) throw CancellationException("Engine was closed before conversation could be created")
             val conversation = engine.createConversation(convConfig)
             activeConversation = conversation
 
@@ -225,6 +234,9 @@ class TranslateGemmaEngine(
                 val flow = conversation.sendMessageAsync(prompt)
 
                 flow.collect { chunk ->
+                    // Exit cleanly if closeLiveEngine() fires mid-collection rather than
+                    // letting the native layer dereference a freed conversation handle.
+                    if (!engineValid) throw CancellationException("Engine was closed during token collection")
                     chunk?.let {
                         try {
                             if (sb.length < maxOutputChars) sb.append(it)
