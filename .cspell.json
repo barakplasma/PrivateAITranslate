@@ -79,6 +79,7 @@
         "nestedscroll",
         "cyclonedx",
         "cyclonedxbom",
+        "GHSA",
         "PYEOF",
         "sarif",
         "SARIF",
