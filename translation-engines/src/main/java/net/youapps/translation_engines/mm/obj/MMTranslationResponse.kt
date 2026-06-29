@@ -17,11 +17,12 @@
 
 package net.youapps.translation_engines.mm.obj
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class MMTranslationResponse(
-    val exception_code: Int? = null,
+    @SerialName("exception_code") val exceptionCode: Int? = null,
     // returns a serialization error
     // val matches: List<MMTranslation>? = emptyList(),
     val mtLangSupported: Boolean? = false,

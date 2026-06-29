@@ -76,6 +76,18 @@
         "traineddata",
         "TEXTLINE",
         "automirrored",
-        "nestedscroll"
+        "nestedscroll",
+        "allowobfuscation",
+        "allowshrinking",
+        "bouncycastle",
+        "Bugsink",
+        "conscrypt",
+        "dontobfuscate",
+        "dontwarn",
+        "fqcn",
+        "javax",
+        "keepattributes",
+        "keepclassmembers",
+        "openjsse"
     ]
 }
