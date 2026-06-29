@@ -3,13 +3,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.devtools.ksp")
-    id("org.cyclonedx.bom")
-}
-
-tasks.withType<org.cyclonedx.gradle.CycloneDxTask>().configureEach {
-    setIncludeConfigs(listOf("fullReleaseRuntimeClasspath"))
-    setSchemaVersion("1.5")
-    setOutputFormat("xml")
 }
 
 android {

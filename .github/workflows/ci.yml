@@ -27,13 +27,57 @@ jobs:
           gradle-version: wrapper
           cache-read-only: true
 
-      - name: Generate CycloneDX SBOM
-        run: ./gradlew :app:cyclonedxBom --no-configuration-cache
+      - name: Resolve Gradle dependencies
+        run: >
+          ./gradlew :app:dependencies
+          --configuration fullReleaseRuntimeClasspath
+          --console=plain
+          > deps.txt
+
+      - name: Convert to CycloneDX SBOM
+        run: |
+          python3 - << 'PYEOF'
+          import re, json, uuid
+
+          deps = set()
+          with open("deps.txt") as f:
+              for line in f:
+                  m = re.search(
+                      r"([a-zA-Z0-9._-]+):([a-zA-Z0-9._-]+):([0-9][a-zA-Z0-9._-]*)"
+                      r"(?:\s+->\s+([0-9][a-zA-Z0-9._-]*))?",
+                      line,
+                  )
+                  if m:
+                      group, name, declared, resolved = m.groups()
+                      deps.add((group, name, resolved or declared))
+
+          bom = {
+              "bomFormat": "CycloneDX",
+              "specVersion": "1.5",
+              "serialNumber": f"urn:uuid:{uuid.uuid4()}",
+              "version": 1,
+              "components": [
+                  {
+                      "type": "library",
+                      "name": name,
+                      "group": group,
+                      "version": version,
+                      "purl": f"pkg:maven/{group}/{name}@{version}",
+                  }
+                  for group, name, version in sorted(deps)
+              ],
+          }
+
+          with open("bom.json", "w") as f:
+              json.dump(bom, f, indent=2)
+
+          print(f"Generated SBOM with {len(bom['components'])} components")
+          PYEOF
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4 # zizmor: ignore[artipacked]
         with:
           name: sbom
-          path: app/build/reports/bom.xml
+          path: bom.json
 
   megalinter:
     name: MegaLinter
