@@ -19,8 +19,9 @@ REPOSITORY_DEVSKIM_DISABLE_ERRORS: true
 # kingfisher: false positive on ephemeral GitHub Actions token in .git/config
 REPOSITORY_KINGFISHER_DISABLE_ERRORS: true
 
-# osv-scanner: no supported lock file format for Gradle in this version
-REPOSITORY_OSV_SCANNER_DISABLE_ERRORS: true
+# osv-scanner: no supported lock file format for Gradle; disable entirely to suppress warning
+DISABLE_LINTERS:
+  - REPOSITORY_OSV_SCANNER
 
 # detekt: use project config with --build-upon-default-config to tune noisy
 # rules (NewLineAtEndOfFile handled by ktlint, MagicNumber thresholds, etc.)
