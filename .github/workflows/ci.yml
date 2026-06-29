@@ -12,9 +12,33 @@ on:
 permissions: {}
 
 jobs:
+  generate-sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6 # zizmor: ignore[cache-poisoning]
+        with:
+          gradle-version: wrapper
+          cache-read-only: true
+
+      - name: Generate CycloneDX SBOM
+        run: ./gradlew :app:cyclonedxBom
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4 # zizmor: ignore[artipacked]
+        with:
+          name: sbom
+          path: app/build/reports/bom.xml
+
   megalinter:
     name: MegaLinter
     runs-on: ubuntu-latest
+    needs: generate-sbom
     permissions:
       contents: write
       pull-requests: write
@@ -24,6 +48,12 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Download SBOM
+        uses: actions/download-artifact@v4 # zizmor: ignore[unpinned-action]
+        with:
+          name: sbom
+          path: .
 
       - uses: oxsecurity/megalinter/flavors/java@0e3ce9b9c8c10effb9b269509cc47ca17cae31c7
         env:
