@@ -192,9 +192,18 @@ class TranslateGemmaEngine(
             // launch and disables GPU automatically.
             if (backendName == "GPU") setGpuCrashGuard(true)
             val engine = try {
-                Engine(config).also {
-                    it.initialize()
+                val eng = Engine(config)
+                try {
+                    eng.initialize()
                     visionAvailable = true
+                    eng
+                } catch (initEx: Exception) {
+                    try {
+                        eng.close()
+                    } catch (closeEx: Exception) {
+                        CrashLogger.w(TAG, "Failed to close partially initialized engine: ${closeEx.message}", closeEx)
+                    }
+                    throw initEx
                 }
             } catch (e: Exception) {
                 CrashLogger.w(TAG, "Vision initialization failed; retrying text-only engine: ${e.message}", e)

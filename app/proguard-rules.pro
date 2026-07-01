@@ -97,7 +97,7 @@
 
 -keep class com.google.ai.edge.litertlm.** { *; }
 -keepclassmembers class com.google.ai.edge.litertlm.Conversation {
-    long handle;
+    private long handle;
 }
 -keepclassmembers class com.google.ai.edge.litertlm.LiteRtLmJni {
     public static com.google.ai.edge.litertlm.LiteRtLmJni INSTANCE;
