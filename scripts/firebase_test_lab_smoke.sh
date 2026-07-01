@@ -9,7 +9,7 @@ Usage:
 Runs the TranslateGemma real-device instrumentation matrix on Firebase Test Lab.
 
 Environment:
-  PROJECT          GCP project id. Default: personal-398106
+  PROJECT          GCP project id. Defaults to active gcloud project.
   GCLOUD           gcloud binary. Default: /workspace/google-cloud-sdk/bin/gcloud
   TIMEOUT          Firebase test timeout. Default: 45m
   RESULTS_BUCKET   Optional gs:// bucket for raw Firebase results.
@@ -23,8 +23,8 @@ if [[ $# -ne 3 ]]; then
   exit 2
 fi
 
-PROJECT="${PROJECT:-personal-398106}"
 GCLOUD="${GCLOUD:-/workspace/google-cloud-sdk/bin/gcloud}"
+PROJECT="${PROJECT:-$("$GCLOUD" config get-value project 2>/dev/null || true)}"
 TIMEOUT="${TIMEOUT:-45m}"
 APP_APK="$1"
 TEST_APK="$2"
@@ -39,6 +39,10 @@ test -f "$APP_APK"
 test -f "$TEST_APK"
 if [[ "$MODEL_INPUT" != gs://* ]]; then
   test -f "$MODEL_INPUT"
+fi
+if [[ -z "$PROJECT" || "$PROJECT" == "(unset)" ]]; then
+  echo "PROJECT is required, either as an environment variable or an active gcloud project." >&2
+  exit 1
 fi
 
 require_gcloud_account() {
