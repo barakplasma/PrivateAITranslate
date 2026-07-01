@@ -41,7 +41,7 @@ import com.barakplasma.privateaitranslate.util.LocaleHelper
 import com.barakplasma.privateaitranslate.util.Preferences
 import net.youapps.translation_engines.Language
 
-open class TranslationActivity: ComponentActivity() {
+open class TranslationActivity : ComponentActivity() {
     lateinit var translationModel: TranslationModel
     var themeMode by mutableStateOf(Preferences.getThemeMode())
     var accentColor by mutableStateOf(Preferences.getAccentColor())

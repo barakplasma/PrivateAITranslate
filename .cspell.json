@@ -12,7 +12,8 @@
         "app/schemas/**",
         "detekt.yml",
         "fastlane/**",
-        "assets/**"
+        "assets/**",
+        "app/src/main/res/values-*/**"
     ],
     "words": [
         "APKSIGNER",
