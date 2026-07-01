@@ -21,35 +21,39 @@ import android.content.Context
 import android.content.res.Configuration
 import com.barakplasma.privateaitranslate.R
 import com.barakplasma.privateaitranslate.db.obj.DbLanguage
-import java.util.*
+import java.util.Locale
 
 object LocaleHelper {
-    fun updateLanguage(context: Context) {
-        val langPref = Preferences.get(Preferences.appLanguageKey, "")
-        val locale = when {
-            langPref.isEmpty() -> Locale.getDefault()
-            langPref.contains("-") -> Locale.Builder()
-                .setLanguage(langPref.substringBefore("-"))
-                .setRegion(langPref.substringAfter("r"))
-                .build()
-            else -> Locale.Builder()
-                .setLanguage(langPref)
-                .build()
-        }
-        updateResources(context, locale)
+    fun wrapContext(context: Context): Context {
+        val locale = getSelectedLocale(context)
+        Locale.setDefault(locale)
+
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(locale)
+        config.setLayoutDirection(locale)
+
+        return context.createConfigurationContext(config)
     }
 
-    private fun updateResources(context: Context, locale: Locale) {
+    fun updateLanguage(context: Context) {
+        val localizedContext = wrapContext(context)
+        updateResources(context, localizedContext.resources.configuration)
+    }
+
+    private fun updateResources(context: Context, config: Configuration) {
         context.resources.apply {
-            val config = Configuration(configuration)
-
-            context.createConfigurationContext(configuration)
-            Locale.setDefault(locale)
-            config.setLocale(locale)
-
             @Suppress("DEPRECATION")
             updateConfiguration(config, displayMetrics)
         }
+    }
+
+    private fun getSelectedLocale(context: Context): Locale {
+        val langPref = Preferences.get(Preferences.appLanguageKey, "")
+        if (langPref.isEmpty()) {
+            return context.resources.configuration.locales[0]
+        }
+
+        return Locale.forLanguageTag(langPref.replace("-r", "-"))
     }
 
     fun getLanguages(context: Context) = listOf(
@@ -63,6 +67,7 @@ object LocaleHelper {
         DbLanguage("cs", "Czech"),
         DbLanguage("da", "Danish"),
         DbLanguage("de", "German"),
+        DbLanguage("el", "Greek"),
         DbLanguage("es", "Spanish"),
         DbLanguage("et", "Estonian"),
         DbLanguage("fa", "Persian"),
@@ -79,10 +84,10 @@ object LocaleHelper {
         DbLanguage("kab", "Kabyle"),
         DbLanguage("ko", "Korean"),
         DbLanguage("lt", "Lithuanian"),
+        DbLanguage("lv", "Latvian"),
         DbLanguage("ml", "Malayalam"),
         DbLanguage("ms", "Malay"),
         DbLanguage("nb-rNO", "Norwegian Bokmål"),
-        DbLanguage("nl", "Dutch"),
         DbLanguage("nn", "Norwegian Nynorsk"),
         DbLanguage("or", "Odia"),
         DbLanguage("pa", "Punjabi"),
@@ -94,12 +99,14 @@ object LocaleHelper {
         DbLanguage("ru", "Russian"),
         DbLanguage("sat", "Santali"),
         DbLanguage("sc", "Sardinian"),
+        DbLanguage("sk", "Slovak"),
         DbLanguage("sr", "Serbian"),
         DbLanguage("sv", "Swedish"),
         DbLanguage("ta", "Tamil"),
         DbLanguage("tr", "Turkish"),
         DbLanguage("tt", "Tatar"),
         DbLanguage("uk", "Ukrainian"),
+        DbLanguage("ur", "Urdu"),
         DbLanguage("vi", "Vietnamese"),
         DbLanguage("zh-rCN", "Chinese (Simplified)"),
         DbLanguage("zh-rTW", "Chinese (Traditional)")
