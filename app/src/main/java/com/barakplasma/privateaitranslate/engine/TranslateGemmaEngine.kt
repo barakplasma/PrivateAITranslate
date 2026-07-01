@@ -57,6 +57,10 @@ class TranslateGemmaEngine(
     @Volatile private var activeConversation: AutoCloseable? = null
     @Volatile private var engineValid = false
     @Volatile private var visionAvailable = false
+    @Volatile var initializedBackendName: String? = null
+        private set
+    val isVisionAvailable: Boolean
+        get() = visionAvailable
     private var backendAvailability: MutableMap<String, Boolean> = mutableMapOf()
 
     override fun createOrRecreate(): TranslationEngine = apply {
@@ -89,6 +93,7 @@ class TranslateGemmaEngine(
         }
         liveEngine = null
         visionAvailable = false
+        initializedBackendName = null
     }
 
     // Persists a flag synchronously before GPU Engine init so that a SIGSEGV (which kills the
@@ -207,6 +212,7 @@ class TranslateGemmaEngine(
             if (backendName == "GPU") setGpuCrashGuard(false) // GPU init succeeded; clear guard
             liveEngine = engine
             engineValid = true
+            initializedBackendName = backendName
             CrashLogger.i(TAG, "Engine initialized successfully ($backendName)")
             engine
         } catch (e: UnsatisfiedLinkError) {

@@ -140,10 +140,12 @@ jobs:
           validate-wrappers: true
 
       - name: Build APK
-        run: ./gradlew assembleFullDebug
+        run: ./gradlew assembleFullDebug assembleFullDebugAndroidTest
 
-      - name: Upload APK
+      - name: Upload APKs
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4 # zizmor: ignore[artipacked]
         with:
-          name: app
-          path: app/build/outputs/apk/full/debug/*.apk
+          name: debug-apks
+          path: |
+            app/build/outputs/apk/full/debug/*.apk
+            app/build/outputs/apk/androidTest/full/debug/*.apk
