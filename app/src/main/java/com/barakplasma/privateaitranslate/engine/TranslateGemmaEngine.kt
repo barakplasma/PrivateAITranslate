@@ -502,7 +502,7 @@ class TranslateGemmaEngine(
         }
 
     private fun sendStructuredMessage(conversation: AutoCloseable, message: JsonObject): String {
-        val handleField = conversation.javaClass.getDeclaredField("handle")
+        val handleField = Class.forName("com.google.ai.edge.litertlm.Conversation").getDeclaredField("handle")
         handleField.isAccessible = true
         val handle = handleField.getLong(conversation)
         val responseJson = callNativeSendMessage(handle, message.toString())

@@ -36,7 +36,7 @@ class AppLaunchRealDeviceTest {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 assertTrue(activity is MainActivity)
-                assertEquals("com.barakplasma.privateaitranslate.debug", activity.packageName)
+                assertEquals(targetContext.packageName, activity.packageName)
             }
         }
     }

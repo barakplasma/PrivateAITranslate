@@ -37,7 +37,8 @@ class AppSmokeRealDeviceTest {
     @Test
     fun opensSettingsAndShowsCoreOptions() {
         launchWithPrefs().use {
-            composeRule.onNodeWithContentDescription("Open menu").performClick()
+            val openMenuDescription = targetContext.getString(com.barakplasma.privateaitranslate.R.string.open_menu)
+            composeRule.onNodeWithContentDescription(openMenuDescription).performClick()
             composeRule.onNodeWithText("Settings").performClick()
             composeRule.waitForIdle()
 

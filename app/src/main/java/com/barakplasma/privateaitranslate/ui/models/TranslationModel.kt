@@ -364,18 +364,22 @@ class TranslationModel : ViewModel() {
             translating = true
             val nativeImageResult = runCatching {
                 val imageFile = withContext(Dispatchers.IO) {
-                    File(context.cacheDir, "translategemma-image-translation.png").also { file ->
+                    File.createTempFile("translategemma-image-", ".png", context.cacheDir).also { file ->
                         file.outputStream().use { output ->
                             image.compress(Bitmap.CompressFormat.PNG, 100, output)
                         }
                     }
                 }
-                withContext(Dispatchers.IO) {
-                    currentEngine.translateImage(
-                        imageFile = imageFile,
-                        source = sourceLanguage.code,
-                        target = targetLanguage.code
-                    )
+                try {
+                    withContext(Dispatchers.IO) {
+                        currentEngine.translateImage(
+                            imageFile = imageFile,
+                            source = sourceLanguage.code,
+                            target = targetLanguage.code
+                        )
+                    }
+                } finally {
+                    imageFile.delete()
                 }
             }
             translating = false

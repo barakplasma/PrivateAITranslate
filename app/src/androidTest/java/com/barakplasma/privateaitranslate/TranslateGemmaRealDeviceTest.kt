@@ -38,10 +38,12 @@ import java.util.Locale
 @RunWith(AndroidJUnit4::class)
 class TranslateGemmaRealDeviceTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
-    private val resultFile = File(
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-        "translategemma-real-device-result.json"
-    )
+    private val resultFile by lazy {
+        File(
+            requireNotNull(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)),
+            "translategemma-real-device-result.json"
+        )
+    }
     private val results = JSONArray()
 
     @Test
@@ -151,6 +153,9 @@ class TranslateGemmaRealDeviceTest {
             "Downloaded model is too small from $url: ${partialFile.length()} bytes",
             partialFile.length() >= TranslateGemmaEngine.MODEL_SIZE_BYTES
         )
+        if (modelFile.exists()) {
+            modelFile.delete()
+        }
         assertTrue(
             "Downloaded model could not be moved from ${partialFile.absolutePath} to ${modelFile.absolutePath}",
             partialFile.renameTo(modelFile)
