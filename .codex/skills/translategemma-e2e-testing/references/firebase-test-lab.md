@@ -47,6 +47,11 @@ The target matrix is:
 
 Always run catalog preflight before launching the matrix; availability can change by project, region, quota, or Firebase catalog updates.
 
+Latest baseline:
+
+- Pixel 10 `frankel` API 36: CPU text+image translation passed with the multimodal model in about 70s.
+- Galaxy S22 `r0q` API 36: CPU text+image translation passed with the multimodal model in about 119s.
+
 ## APKs and Staged Suite
 
 Build artifacts:
@@ -73,6 +78,8 @@ STAGES=model ./scripts/firebase_test_lab_smoke.sh app.apk test.apk gs://your-buc
 For the model stage, avoid Firebase `--other-files` for the 2.8 GB model. It can make the matrix take more than an hour because Firebase stages the large file and can pull it back. The optimized path passes `MODEL_DOWNLOAD_URL` to instrumentation and downloads the model into `TranslateGemmaEngine.getModelFile(context)`.
 
 If `hf` is used, verify the exact multimodal `.litertlm` path exists in the Hugging Face repo first. A stale HF URL fails immediately with HTTP 404 on both devices.
+
+With the signed GCS or public Hugging Face download path, the model matrix is now roughly 8-10 minutes per device instead of the older ~1.5 hour Firebase `--other-files` path.
 
 ## Vast.ai Machine Guidance
 

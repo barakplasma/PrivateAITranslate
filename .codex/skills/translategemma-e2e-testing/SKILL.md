@@ -33,13 +33,15 @@ Use this skill for real-device verification of PrivateAITranslate with the multi
        gs://your-results-bucket/translategemma/model.litertlm
    ```
    Use `STAGES=launch,settings,ltr,rtl` for cheap UI-only checks, or
-   `STAGES=model` when iterating on the heavy TranslateGemma load path.
+   `STAGES=model` when iterating on the TranslateGemma load path.
 
 ## Rules
 
 - Do not commit service-account JSON, project IDs, bucket names, tokens, or device-session URLs.
 - Prefer the debug APK plus androidTest APK for automated assertions.
 - Run the cheap app stages, Robo crawl, and heavy TranslateGemma stage as independent Firebase matrices so Pixel/Galaxy and stage failures are visible separately.
-- For the heavy model stage, prefer a signed HTTPS download from a pre-uploaded GCS object or a public Hugging Face artifact. Avoid Firebase `--other-files` for the 2.8 GB model because Firebase also pulls/stages large files slowly.
-- Treat GPU fallback as a test failure; the instrumentation test must prove the requested backend actually initialized.
+- For the model stage, use a signed HTTPS download from a pre-uploaded GCS object or a public Hugging Face artifact. Avoid Firebase `--other-files` for the 2.8 GB model because Firebase also pulls/stages large files slowly.
+- Verify any Hugging Face multimodal URL before launching the matrix. A stale or missing artifact path returns HTTP 404 immediately on device.
+- Current real-device baseline: Pixel 10 `frankel` API 36 and Galaxy S22 `r0q` API 36 passed CPU text+image translation with the multimodal model. GPU failed on both with a LiteRT-LM engine initialization error.
+- Recent CPU model timings are about 70s on Pixel 10 and 119s on Galaxy S22. The optimized signed/public download path keeps the model matrix around 8-10 minutes per device, not the older ~1.5 hour Firebase `--other-files` path.
 - For conversion/export jobs, require at least 96 GB system RAM. Prefer 128 GB RAM when renting a Vast.ai node.
