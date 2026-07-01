@@ -19,6 +19,7 @@ package com.barakplasma.privateaitranslate.ui
 
 import android.annotation.SuppressLint
 import android.app.ComponentCaller
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -44,6 +45,10 @@ open class TranslationActivity: ComponentActivity() {
     lateinit var translationModel: TranslationModel
     var themeMode by mutableStateOf(Preferences.getThemeMode())
     var accentColor by mutableStateOf(Preferences.getAccentColor())
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.wrapContext(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         LocaleHelper.updateLanguage(this)
