@@ -29,6 +29,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.Locale
 
 @RunWith(AndroidJUnit4::class)
@@ -43,6 +47,7 @@ class TranslateGemmaRealDeviceTest {
     @Test
     fun validatesTextAndImageTranslationOnCpuAndGpu() = runBlocking {
         val modelFile = TranslateGemmaEngine.getModelFile(context)
+        ensureModelAvailable(modelFile)
         assertTrue("Missing model file at ${modelFile.absolutePath}", modelFile.exists())
         assertTrue(
             "Model file is too small: ${modelFile.length()} bytes",
@@ -67,6 +72,107 @@ class TranslateGemmaRealDeviceTest {
             )
         }
     }
+
+    private fun ensureModelAvailable(modelFile: File) {
+        if (modelFile.exists() && modelFile.length() >= TranslateGemmaEngine.MODEL_SIZE_BYTES) {
+            return
+        }
+
+        val stagingPath = InstrumentationRegistry.getArguments().getString("MODEL_STAGING_PATH")
+        val parent = requireNotNull(modelFile.parentFile) {
+            "Model file has no parent directory: ${modelFile.absolutePath}"
+        }
+        parent.mkdirs()
+
+        if (stagingPath.isNullOrBlank()) {
+            downloadModel(modelFile)
+            return
+        }
+
+        val appCopyError = runCatching {
+            File(stagingPath).inputStream().use { input ->
+                modelFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+        }.exceptionOrNull()
+
+        if (modelFile.exists() && modelFile.length() >= TranslateGemmaEngine.MODEL_SIZE_BYTES) {
+            return
+        }
+
+        val output = runShell(
+            listOf(
+                "id",
+                "ls -l ${shellQuote(stagingPath)}",
+                "mkdir -p ${shellQuote(parent.absolutePath)}",
+                "cp ${shellQuote(stagingPath)} ${shellQuote(modelFile.absolutePath)}",
+                "chmod 644 ${shellQuote(modelFile.absolutePath)}",
+                "ls -l ${shellQuote(modelFile.absolutePath)}"
+            ).joinToString(" && ") + " 2>&1"
+        )
+
+        assertTrue(
+            "Missing model file after staging copy from $stagingPath to ${modelFile.absolutePath}. appCopy=${appCopyError?.javaClass?.name}: ${appCopyError?.message}. shell=$output",
+            modelFile.exists() && modelFile.length() >= TranslateGemmaEngine.MODEL_SIZE_BYTES
+        )
+    }
+
+    private fun downloadModel(modelFile: File) {
+        val url = InstrumentationRegistry.getArguments().getString("MODEL_DOWNLOAD_URL")
+            ?: TranslateGemmaEngine.MODEL_DOWNLOAD_URL
+        val partialFile = File(modelFile.parentFile, "${modelFile.name}.partial")
+        partialFile.delete()
+
+        val started = System.nanoTime()
+        val connection = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 30_000
+            readTimeout = 60_000
+            instanceFollowRedirects = true
+            setRequestProperty("User-Agent", "PrivateAITranslate-FirebaseTest/1.0")
+        }
+
+        try {
+            val status = connection.responseCode
+            if (status !in 200..299) {
+                val error = connection.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
+                throw IOException("Model download failed with HTTP $status from $url: ${error.take(500)}")
+            }
+            connection.inputStream.use { input ->
+                partialFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+        } finally {
+            connection.disconnect()
+        }
+
+        assertTrue(
+            "Downloaded model is too small from $url: ${partialFile.length()} bytes",
+            partialFile.length() >= TranslateGemmaEngine.MODEL_SIZE_BYTES
+        )
+        assertTrue(
+            "Downloaded model could not be moved from ${partialFile.absolutePath} to ${modelFile.absolutePath}",
+            partialFile.renameTo(modelFile)
+        )
+        assertTrue(
+            "Downloaded model could not be moved to ${modelFile.absolutePath} after ${(System.nanoTime() - started) / 1_000_000_000L}s",
+            modelFile.exists() && modelFile.length() >= TranslateGemmaEngine.MODEL_SIZE_BYTES
+        )
+    }
+
+    private fun runShell(command: String): String {
+        val descriptor = InstrumentationRegistry.getInstrumentation()
+            .uiAutomation
+            .executeShellCommand(command)
+        return try {
+            FileInputStream(descriptor.fileDescriptor).bufferedReader().use { it.readText() }
+        } finally {
+            descriptor.close()
+        }
+    }
+
+    private fun shellQuote(value: String): String = "'" + value.replace("'", "'\\''") + "'"
 
     private suspend fun verifyBackend(backend: String, imageFile: File) {
         val engine = TranslateGemmaEngine(TestSettingsProvider(backend), context)
