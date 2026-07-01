@@ -25,8 +25,10 @@ import com.google.ai.edge.litertlm.ConversationConfig
 import com.google.ai.edge.litertlm.Engine
 import com.google.ai.edge.litertlm.EngineConfig
 import com.google.ai.edge.litertlm.SamplerConfig
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.flow.collect
 import net.youapps.translation_engines.ApiKeyState
 import net.youapps.translation_engines.EngineSettingsProvider
 import net.youapps.translation_engines.Language
@@ -54,6 +56,11 @@ class TranslateGemmaEngine(
 
     @Volatile private var activeConversation: AutoCloseable? = null
     @Volatile private var engineValid = false
+    @Volatile private var visionAvailable = false
+    @Volatile var initializedBackendName: String? = null
+        private set
+    val isVisionAvailable: Boolean
+        get() = visionAvailable
     private var backendAvailability: MutableMap<String, Boolean> = mutableMapOf()
 
     override fun createOrRecreate(): TranslationEngine = apply {
@@ -85,6 +92,8 @@ class TranslateGemmaEngine(
             CrashLogger.e(TAG, "Failed to close engine: ${e.message}", e)
         }
         liveEngine = null
+        visionAvailable = false
+        initializedBackendName = null
     }
 
     // Persists a flag synchronously before GPU Engine init so that a SIGSEGV (which kills the
@@ -172,18 +181,47 @@ class TranslateGemmaEngine(
             backendName = name
             val config = EngineConfig(
                 modelPath = modelFile.absolutePath,
-                backend = backend
+                backend = backend,
+                visionBackend = backend,
+                maxNumImages = 1,
+                cacheDir = appContext.cacheDir.absolutePath
             )
             CrashLogger.i(TAG, "Initializing engine ($backendName) with model: ${modelFile.absolutePath} ($modelSizeGB GB)")
             // Set the crash guard before native GPU init — if Engine(config) causes a SIGSEGV the
             // process is killed without any Java handler running, so this flag persists to the next
             // launch and disables GPU automatically.
             if (backendName == "GPU") setGpuCrashGuard(true)
-            val engine = Engine(config)
-            engine.initialize()
+            val engine = try {
+                val eng = Engine(config)
+                try {
+                    eng.initialize()
+                    visionAvailable = true
+                    eng
+                } catch (initEx: Exception) {
+                    try {
+                        eng.close()
+                    } catch (closeEx: Exception) {
+                        CrashLogger.w(TAG, "Failed to close partially initialized engine: ${closeEx.message}", closeEx)
+                    }
+                    throw initEx
+                }
+            } catch (e: Exception) {
+                CrashLogger.w(TAG, "Vision initialization failed; retrying text-only engine: ${e.message}", e)
+                Engine(
+                    EngineConfig(
+                        modelPath = modelFile.absolutePath,
+                        backend = backend,
+                        cacheDir = appContext.cacheDir.absolutePath
+                    )
+                ).also {
+                    it.initialize()
+                    visionAvailable = false
+                }
+            }
             if (backendName == "GPU") setGpuCrashGuard(false) // GPU init succeeded; clear guard
             liveEngine = engine
             engineValid = true
+            initializedBackendName = backendName
             CrashLogger.i(TAG, "Engine initialized successfully ($backendName)")
             engine
         } catch (e: UnsatisfiedLinkError) {
@@ -201,6 +239,63 @@ class TranslateGemmaEngine(
         }
     }
 
+    suspend fun translateImage(imageFile: File, source: String, target: String): Translation {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            error("TranslateGemma requires Android 12 (API 31) or higher")
+        }
+        check(imageFile.exists()) { "Image file not found: ${imageFile.absolutePath}" }
+
+        val engine = getOrCreateEngine()
+        check(visionAvailable) {
+            "The installed TranslateGemma model does not include vision support. Download or import the multimodal TranslateGemma bundle."
+        }
+
+        val sourceLang = requireExplicitSourceLanguage(source)
+
+        return try {
+            val convConfig = ConversationConfig(
+                samplerConfig = SamplerConfig(topK = 40, topP = 0.95, temperature = 0.1)
+            )
+
+            closeActiveConversation()
+            val conversation = synchronized(this) {
+                if (!engineValid) throw CancellationException("Engine was closed before conversation could be created")
+                val conv = engine.createConversation(convConfig)
+                activeConversation = conv
+                conv
+            }
+
+            try {
+                val result = sendStructuredMessage(
+                    conversation,
+                    buildStructuredImageMessage(imageFile, sourceLang, target)
+                )
+                if (!engineValid) throw CancellationException("Engine was closed during image translation")
+                return Translation(translatedText = cleanupTranslationOutput(result))
+            } finally {
+                synchronized(this) {
+                    if (activeConversation === conversation) {
+                        activeConversation = null
+                    }
+                }
+                try {
+                    conversation.close()
+                } catch (e: Exception) {
+                    CrashLogger.w(TAG, "Failed to close image conversation: ${e.message}", e)
+                }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: OutOfMemoryError) {
+            CrashLogger.e(TAG, "Image translation failed: out of memory", e)
+            closeLiveEngine()
+            throw IllegalStateException("Image translation failed: Device out of memory. Try a smaller crop or restart the app.", e)
+        } catch (e: Exception) {
+            CrashLogger.e(TAG, "Image translation failed: ${e.message}", e)
+            throw IllegalStateException("Image translation failed: ${e.message}", e)
+        }
+    }
+
     override suspend fun getLanguages(): List<Language> = SUPPORTED_LANGUAGES
 
     @Suppress("UseCheckOrError") // catch-rethrow blocks need cause parameter; error() does not support it
@@ -210,12 +305,9 @@ class TranslateGemmaEngine(
         }
 
         val engine = getOrCreateEngine()
-        val sourceLang = if (source.isEmpty() || source == autoLanguageCode) "auto" else source
-        val prompt = "<src>$sourceLang</src><dst>$target</dst><text>$query</text>"
+        val sourceLang = requireExplicitSourceLanguage(source)
 
         return try {
-            val sb = StringBuilder()
-            val maxOutputChars = (query.length * 6).coerceAtLeast(200)
             val convConfig = ConversationConfig(
                 samplerConfig = SamplerConfig(topK = 40, topP = 0.95, temperature = 0.1)
             )
@@ -234,20 +326,12 @@ class TranslateGemmaEngine(
             }
 
             try {
-                val flow = conversation.sendMessageAsync(prompt)
-
-                flow.collect { chunk ->
-                    // Exit cleanly if closeLiveEngine() fires mid-collection rather than
-                    // letting the native layer dereference a freed conversation handle.
-                    if (!engineValid) throw CancellationException("Engine was closed during token collection")
-                    chunk?.let {
-                        try {
-                            if (sb.length < maxOutputChars) sb.append(it)
-                        } catch (e: Exception) {
-                            CrashLogger.w(TAG, "Failed to append chunk: ${e.message}", e)
-                        }
-                    }
-                }
+                val result = sendStructuredMessage(
+                    conversation,
+                    buildStructuredTextMessage(query, sourceLang, target)
+                )
+                if (!engineValid) throw CancellationException("Engine was closed during text translation")
+                return Translation(translatedText = cleanupTranslationOutput(result))
             } finally {
                 // Only clear the field if it still points to *our* conversation — a concurrent
                 // translate() call may have already replaced it with a newer one.
@@ -262,12 +346,6 @@ class TranslateGemmaEngine(
                     CrashLogger.w(TAG, "Failed to close conversation: ${e.message}", e)
                 }
             }
-
-            val result = sb.toString().trim()
-            if (result.isEmpty()) {
-                error("Translation resulted in empty output. The model may not have generated a response.")
-            }
-            Translation(translatedText = result)
         } catch (e: CancellationException) {
             throw e
         } catch (e: OutOfMemoryError) {
@@ -282,11 +360,11 @@ class TranslateGemmaEngine(
 
     companion object {
         const val GPU_CRASH_GUARD_KEY = "translategemma_gpu_init_incomplete"
-        const val MODEL_FILENAME = "translategemma-4b-it-int4-generic.litertlm"
+        const val MODEL_FILENAME = "translategemma-4b-it-int4-multimodal.litertlm"
         const val MODEL_DIR = "translategemma"
-        const val MODEL_SIZE_BYTES = 2_000_000_000L
+        const val MODEL_SIZE_BYTES = 2_500_000_000L
         const val MODEL_DOWNLOAD_URL =
-            "https://huggingface.co/barakplasma/translategemma-4b-it-android-task-quantized/resolve/main/artifacts/int4-generic/translategemma-4b-it-int4-generic.litertlm"
+            "https://huggingface.co/barakplasma/translategemma-4b-it-android-task-quantized/resolve/main/artifacts/int4-multimodal/translategemma-4b-it-int4-multimodal.litertlm"
         const val MAX_INPUT_CHARS = 1000
         const val MAX_SAFE_CHUNK_CHARS = (MAX_INPUT_CHARS * 8) / 10  // 80% → 800 chars
 
@@ -396,5 +474,83 @@ class TranslateGemmaEngine(
             Language("zh", "Chinese (Simplified)"),
             Language("zh-TW", "Chinese (Traditional)"),
         )
+    }
+
+    private fun requireExplicitSourceLanguage(source: String): String {
+        if (source.isEmpty() || source == autoLanguageCode) {
+            error("TranslateGemma requires a source language. Choose the source language instead of Auto.")
+        }
+        return source.replace('_', '-')
+    }
+
+    private fun buildStructuredTextMessage(text: String, source: String, target: String): JsonObject =
+        JsonObject().apply {
+            addProperty("role", "user")
+            val content = JsonArray()
+            content.add(
+                JsonObject().apply {
+                    addProperty("type", "text")
+                    addProperty("source_lang_code", source)
+                    addProperty("target_lang_code", target.replace('_', '-'))
+                    addProperty("text", text)
+                }
+            )
+            add("content", content)
+        }
+
+    private fun buildStructuredImageMessage(imageFile: File, source: String, target: String): JsonObject =
+        JsonObject().apply {
+            addProperty("role", "user")
+            val content = JsonArray()
+            content.add(
+                JsonObject().apply {
+                    addProperty("type", "image")
+                    addProperty("path", imageFile.absolutePath)
+                    addProperty("image", imageFile.absolutePath)
+                    addProperty("source_lang_code", source)
+                    addProperty("target_lang_code", target.replace('_', '-'))
+                }
+            )
+            add("content", content)
+        }
+
+    private fun sendStructuredMessage(conversation: AutoCloseable, message: JsonObject): String {
+        val handleField = Class.forName("com.google.ai.edge.litertlm.Conversation").getDeclaredField("handle")
+        handleField.isAccessible = true
+        val handle = handleField.getLong(conversation)
+        val responseJson = callNativeSendMessage(handle, message.toString())
+        val response = JsonParser.parseString(responseJson).asJsonObject
+        val content = response.getAsJsonArray("content")
+            ?: error("TranslateGemma returned no content: $responseJson")
+
+        val text = buildString {
+            content.forEach { item ->
+                val obj = item.asJsonObject
+                if (obj.get("type")?.asString == "text") {
+                    append(obj.get("text")?.asString.orEmpty())
+                }
+            }
+        }.trim()
+        if (text.isEmpty()) {
+            error("TranslateGemma returned an empty response: $responseJson")
+        }
+        return text
+    }
+
+    private fun cleanupTranslationOutput(text: String): String =
+        text.trim().trimEnd('*').trim()
+
+    private fun callNativeSendMessage(handle: Long, messageJson: String): String {
+        val jniClass = Class.forName("com.google.ai.edge.litertlm.LiteRtLmJni")
+        val instance = jniClass.getField("INSTANCE").get(null)
+        val method = jniClass.getDeclaredMethod(
+            "nativeSendMessage",
+            Long::class.javaPrimitiveType,
+            String::class.java,
+            String::class.java,
+            Integer::class.java
+        )
+        method.isAccessible = true
+        return method.invoke(instance, handle, messageJson, "{}", null) as String
     }
 }

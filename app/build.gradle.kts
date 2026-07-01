@@ -26,7 +26,7 @@ android {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
 
@@ -81,7 +81,6 @@ android {
         }
     }
     namespace = "com.barakplasma.privateaitranslate"
-
 }
 
 // Force the Android-flavored Guava to fix GHSA-5mg8-w23w-74h3 and GHSA-7g45-4rm6-3mm3
@@ -100,8 +99,9 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.exifinterface:exifinterface:1.4.1")
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 
     // Compose
     implementation("androidx.compose.ui:ui:$composeVersion")

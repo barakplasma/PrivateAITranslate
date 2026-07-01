@@ -26,8 +26,8 @@ jobs:
           java-version: "17"
           cache: "gradle"
 
-      - name: Build APK
-        run: ./gradlew assembleFullRelease --no-daemon
+      - name: Build APKs
+        run: ./gradlew assembleFullRelease assembleFullDebug assembleFullDebugAndroidTest --no-daemon
 
       - name: Sign APK
         env:
@@ -56,6 +56,8 @@ jobs:
             "$APKSIGNER" sign --ks app/debug-signing.keystore --ks-pass pass:android123 --ks-key-alias privateaitranslate --key-pass pass:android123 app/build/outputs/apk/full/release/app-full-release-unsigned.apk
             mv app/build/outputs/apk/full/release/app-full-release-unsigned.apk "app-release.apk"
           fi
+          cp app/build/outputs/apk/full/debug/app-full-debug.apk app-full-debug.apk
+          cp app/build/outputs/apk/androidTest/full/debug/app-full-debug-androidTest.apk app-full-debug-androidTest.apk
 
       - name: Create changelog
         if: startsWith(github.ref, 'refs/tags/')
@@ -71,7 +73,10 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           body: ${{ steps.changelog.outputs.changes || 'Manual release build' }}
-          files: "app-release.apk"
+          files: |
+            app-release.apk
+            app-full-debug.apk
+            app-full-debug-androidTest.apk
           fail_on_unmatched_files: true
           make_latest: true
 

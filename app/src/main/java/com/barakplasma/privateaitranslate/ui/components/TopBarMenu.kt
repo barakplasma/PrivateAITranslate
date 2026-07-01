@@ -26,6 +26,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
+import com.barakplasma.privateaitranslate.R
 import com.barakplasma.privateaitranslate.obj.MenuItemData
 
 @Composable
@@ -40,6 +42,7 @@ fun TopBarMenu(
         // 3 vertical dots icon
         StyledIconButton(
             imageVector = Icons.Default.MoreVert,
+            contentDescription = stringResource(R.string.open_menu),
             onClick = {
                 expanded = true
             }

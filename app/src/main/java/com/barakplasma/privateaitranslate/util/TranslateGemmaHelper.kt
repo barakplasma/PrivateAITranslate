@@ -24,9 +24,8 @@ import com.barakplasma.privateaitranslate.engine.TranslateGemmaEngine
 import java.io.File
 
 object TranslateGemmaHelper {
-
     /**
-     * Starts a DownloadManager download for the TranslateGemma INT4 model.
+     * Starts a DownloadManager download for the TranslateGemma multimodal INT4 model.
      * Returns the DownloadManager download ID, which can be used to query progress.
      * Returns -1 if the model is already downloaded.
      */
@@ -38,7 +37,7 @@ object TranslateGemmaHelper {
 
         val request = DownloadManager.Request(Uri.parse(TranslateGemmaEngine.MODEL_DOWNLOAD_URL))
             .setTitle("TranslateGemma model")
-            .setDescription("Downloading on-device translation model (~2 GB)")
+            .setDescription("Downloading on-device multimodal translation model")
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             .setDestinationUri(Uri.fromFile(modelFile))
             .setAllowedOverMetered(false)

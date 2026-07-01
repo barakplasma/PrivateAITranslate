@@ -34,12 +34,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.UploadFile
-import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -54,10 +54,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.barakplasma.privateaitranslate.ui.components.SearchAppBar
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.barakplasma.privateaitranslate.R
 import com.barakplasma.privateaitranslate.ui.components.DialogButton
+import com.barakplasma.privateaitranslate.ui.components.SearchAppBar
 import com.barakplasma.privateaitranslate.ui.components.StyledIconButton
 import com.barakplasma.privateaitranslate.ui.dialogs.FullscreenDialog
 import com.barakplasma.privateaitranslate.ui.models.DownloadState
@@ -351,7 +351,7 @@ private fun ModelStatusRow(
 @Composable
 private fun OfflineDownloadLinkRow() {
     val uriHandler = LocalUriHandler.current
-    val modelUrl = "https://huggingface.co/barakplasma/translategemma-4b-it-android-task-quantized/resolve/main/artifacts/int4-generic/translategemma-4b-it-int4-generic.litertlm"
+    val modelUrl = "https://huggingface.co/barakplasma/translategemma-4b-it-android-task-quantized/resolve/main/artifacts/int4-multimodal/translategemma-4b-it-int4-multimodal.litertlm"
 
     Row(
         modifier = Modifier

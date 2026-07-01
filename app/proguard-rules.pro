@@ -96,4 +96,11 @@
 -dontwarn org.openjsse.**
 
 -keep class com.google.ai.edge.litertlm.** { *; }
+-keepclassmembers class com.google.ai.edge.litertlm.Conversation {
+    private long handle;
+}
+-keepclassmembers class com.google.ai.edge.litertlm.LiteRtLmJni {
+    public static com.google.ai.edge.litertlm.LiteRtLmJni INSTANCE;
+    private java.lang.String nativeSendMessage(long, java.lang.String, java.lang.String, java.lang.Integer);
+}
 -dontwarn com.google.ai.edge.litertlm.**

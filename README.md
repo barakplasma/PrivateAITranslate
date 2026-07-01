@@ -49,6 +49,11 @@ Download the latest release from the [**GitHub Releases**](https://github.com/ba
 ### Local / On-Device (Recommended)
 * **TranslateGemma (On-Device)**: High-quality translation performed entirely on your device using Google's TranslateGemma model via LiteRT. Supports 55+ languages. Requires a one-time ~2 GB download; no account or internet connection needed afterwards.
 
+### Real-device status
+* Multimodal TranslateGemma text+image translation has passed on CPU in Firebase Test Lab on Pixel 10 (`frankel`, Android 36) and Galaxy S22 (`r0q`, Android 36).
+* Current CPU model-stage timings are about 70s on Pixel 10 and 119s on Galaxy S22. The optimized model matrix uses signed GCS or public Hugging Face downloads and runs in about 8-10 minutes per device.
+* GPU backend work is still in progress: both devices currently fail LiteRT-LM engine initialization when GPU is requested. NPU acceleration likely needs a separate LiteRT-LM/CompiledModel or vendor path because the current Java dependency exposes CPU/GPU only.
+
 ### Open Source / Self-hostable
 * <a href="https://github.com/LibreTranslate/LibreTranslate">LibreTranslate</a>
 * <a href="https://github.com/thedaviddelta/lingva-translate">LingvaTranslate</a>
