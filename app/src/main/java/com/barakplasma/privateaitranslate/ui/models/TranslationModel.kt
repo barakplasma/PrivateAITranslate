@@ -359,6 +359,41 @@ class TranslationModel : ViewModel() {
     }
 
     fun processImage(context: Context, image: Bitmap) = viewModelScope.launch {
+        val currentEngine = engine
+        if (currentEngine is TranslateGemmaEngine) {
+            translating = true
+            val nativeImageResult = runCatching {
+                val imageFile = withContext(Dispatchers.IO) {
+                    File(context.cacheDir, "translategemma-image-translation.png").also { file ->
+                        file.outputStream().use { output ->
+                            image.compress(Bitmap.CompressFormat.PNG, 100, output)
+                        }
+                    }
+                }
+                withContext(Dispatchers.IO) {
+                    currentEngine.translateImage(
+                        imageFile = imageFile,
+                        source = sourceLanguage.code,
+                        target = targetLanguage.code
+                    )
+                }
+            }
+            translating = false
+
+            nativeImageResult.onSuccess { result ->
+                insertedText = context.getString(R.string.image_translation)
+                translation = result
+                translatedTexts = translatedTexts.toMutableMap().also {
+                    it[currentEngine.name] = result
+                }.toMap()
+                annotatedBitmap = null
+                saveToHistory()
+                return@launch
+            }.onFailure { e ->
+                Log.w("image translation", "Native TranslateGemma image path failed; falling back to OCR", e)
+            }
+        }
+
         // Non-Latin scripts (Hebrew, Arabic, CJK, etc.) are not supported by the bundled ML Kit
         // Latin recognizer — route them straight to Tesseract so the user gets a clear prompt.
         val ocrResult: Pair<String, Map<Rect, String>>? =

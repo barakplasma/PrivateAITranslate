@@ -351,7 +351,7 @@ private fun ModelStatusRow(
 @Composable
 private fun OfflineDownloadLinkRow() {
     val uriHandler = LocalUriHandler.current
-    val modelUrl = "https://huggingface.co/barakplasma/translategemma-4b-it-android-task-quantized/resolve/main/artifacts/int4-generic/translategemma-4b-it-int4-generic.litertlm"
+    val modelUrl = "https://huggingface.co/barakplasma/translategemma-4b-it-android-task-quantized/resolve/main/artifacts/int4-multimodal/translategemma-4b-it-int4-multimodal.litertlm"
 
     Row(
         modifier = Modifier
