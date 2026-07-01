@@ -40,7 +40,6 @@ import com.barakplasma.privateaitranslate.ext.toastFromMainThread
 import com.barakplasma.privateaitranslate.util.JsonHelper
 import com.barakplasma.privateaitranslate.util.MlKitOcrHelper
 import com.barakplasma.privateaitranslate.util.Preferences
-import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -52,6 +51,7 @@ import kotlinx.coroutines.withContext
 import net.youapps.translation_engines.Language
 import net.youapps.translation_engines.Translation
 import net.youapps.translation_engines.TranslationEngine
+import java.io.File
 
 class TranslationModel : ViewModel() {
     var engine by mutableStateOf(getCurrentEngine())

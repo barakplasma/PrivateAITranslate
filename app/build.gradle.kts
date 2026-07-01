@@ -26,7 +26,7 @@ android {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
 
@@ -81,7 +81,6 @@ android {
         }
     }
     namespace = "com.barakplasma.privateaitranslate"
-
 }
 
 // Force the Android-flavored Guava to fix GHSA-5mg8-w23w-74h3 and GHSA-7g45-4rm6-3mm3

@@ -274,7 +274,9 @@ class TranslateGemmaRealDeviceTest {
         private val selectedBackend: String
     ) : EngineSettingsProvider {
         override fun getApiUrl(engine: TranslationEngine): String? = null
+
         override fun getApiKey(engine: TranslationEngine): String? = null
+
         override fun getSelectedModel(engine: TranslationEngine): String = selectedBackend
     }
 }
