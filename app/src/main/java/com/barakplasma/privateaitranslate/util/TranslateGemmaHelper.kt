@@ -24,7 +24,6 @@ import com.barakplasma.privateaitranslate.engine.TranslateGemmaEngine
 import java.io.File
 
 object TranslateGemmaHelper {
-
     /**
      * Starts a DownloadManager download for the TranslateGemma multimodal INT4 model.
      * Returns the DownloadManager download ID, which can be used to query progress.

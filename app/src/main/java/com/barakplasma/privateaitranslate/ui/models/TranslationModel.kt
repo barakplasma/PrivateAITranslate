@@ -35,11 +35,11 @@ import com.barakplasma.privateaitranslate.R
 import com.barakplasma.privateaitranslate.db.obj.DbLanguage
 import com.barakplasma.privateaitranslate.db.obj.HistoryItem
 import com.barakplasma.privateaitranslate.db.obj.HistoryItemType
+import com.barakplasma.privateaitranslate.engine.TranslateGemmaEngine
 import com.barakplasma.privateaitranslate.ext.toastFromMainThread
 import com.barakplasma.privateaitranslate.util.JsonHelper
-import com.barakplasma.privateaitranslate.util.Preferences
 import com.barakplasma.privateaitranslate.util.MlKitOcrHelper
-import com.barakplasma.privateaitranslate.util.TessHelper
+import com.barakplasma.privateaitranslate.util.Preferences
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -49,7 +49,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.barakplasma.privateaitranslate.engine.TranslateGemmaEngine
 import net.youapps.translation_engines.Language
 import net.youapps.translation_engines.Translation
 import net.youapps.translation_engines.TranslationEngine
@@ -279,14 +278,17 @@ class TranslationModel : ViewModel() {
 
         viewModelScope.launch(Dispatchers.IO) {
             // don't create new entry if a similar one exists
-            if (Preferences.get(Preferences.skipSimilarHistoryKey, true) && Db.historyDao()
-                    .existsSimilar(
-                        historyItem.insertedText,
-                        historyItem.sourceLanguageCode,
-                        historyItem.targetLanguageCode,
-                        itemType = itemType
-                    )
-            ) return@launch
+            if (
+                Preferences.get(Preferences.skipSimilarHistoryKey, true) &&
+                Db.historyDao().existsSimilar(
+                    historyItem.insertedText,
+                    historyItem.sourceLanguageCode,
+                    historyItem.targetLanguageCode,
+                    itemType = itemType
+                )
+            ) {
+                return@launch
+            }
 
             Db.historyDao().insertAll(historyItem)
         }
@@ -382,7 +384,6 @@ class TranslationModel : ViewModel() {
                     imageFile.delete()
                 }
             }
-            translating = false
 
             nativeImageResult.onSuccess { result ->
                 insertedText = context.getString(R.string.image_translation)
@@ -391,46 +392,30 @@ class TranslationModel : ViewModel() {
                     it[currentEngine.name] = result
                 }.toMap()
                 annotatedBitmap = null
+                translating = false
                 saveToHistory()
                 return@launch
-            }.onFailure { e ->
-                Log.w("image translation", "Native TranslateGemma image path failed; falling back to OCR", e)
+            }
+
+            nativeImageResult.exceptionOrNull()?.let { failure ->
+                Log.w("image translation", "Native TranslateGemma image path failed; falling back to ML Kit OCR", failure)
             }
         }
 
-        // Non-Latin scripts (Hebrew, Arabic, CJK, etc.) are not supported by the bundled ML Kit
-        // Latin recognizer — route them straight to Tesseract so the user gets a clear prompt.
-        val ocrResult: Pair<String, Map<Rect, String>>? =
-            if (!MlKitOcrHelper.supportsLanguage(sourceLanguage.code)) {
-                if (!TessHelper.areLanguagesDownloaded(context)) {
-                    context.toastFromMainThread(R.string.init_tess_first)
-                    return@launch
-                }
-                withContext(Dispatchers.IO) { TessHelper.getText(context, image) }
-            } else {
-                // ML Kit OCR first (full/noInternet); stub returns null in pureOffline.
-                // null = ML Kit unavailable; empty regions = ML Kit ran but found no text.
-                withContext(Dispatchers.IO) { MlKitOcrHelper.getText(image, sourceLanguage.code) }
-                    ?.let { result ->
-                        // ML Kit ran — if no text found and Tesseract is ready, let it try
-                        if (result.second.isEmpty() && TessHelper.areLanguagesDownloaded(context)) {
-                            withContext(Dispatchers.IO) { TessHelper.getText(context, image) }
-                        } else {
-                            result
-                        }
-                    } ?: run {
-                        // ML Kit unavailable (pureOffline) — fall back to Tesseract
-                        if (!TessHelper.areLanguagesDownloaded(context)) {
-                            context.toastFromMainThread(R.string.init_tess_first)
-                            return@launch
-                        }
-                        withContext(Dispatchers.IO) { TessHelper.getText(context, image) }
-                    }
-            }
+        translating = false
+
+        // ML Kit OCR is the only fallback after TranslateGemma.
+        // full/noInternet ship the ML Kit recognizers; pureOffline returns null here.
+        val ocrResult = withContext(Dispatchers.IO) {
+            MlKitOcrHelper.getText(image, sourceLanguage.code)
+        } ?: run {
+            _apiError.emit(IllegalStateException("TranslateGemma image translation failed and ML Kit OCR was unavailable"))
+            return@launch
+        }
 
         withContext(Dispatchers.IO) {
             // in the beginning, only show the detected texts and not its translation
-            annotatedBitmap = ocrResult?.let { (text, components) ->
+            annotatedBitmap = ocrResult.let { (text, components) ->
                 AnnotatedBitmap(
                     image = image,
                     components = components,

@@ -28,14 +28,14 @@ import com.google.ai.edge.litertlm.SamplerConfig
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import java.io.File
+import java.text.BreakIterator
 import kotlinx.coroutines.CancellationException
 import net.youapps.translation_engines.ApiKeyState
 import net.youapps.translation_engines.EngineSettingsProvider
 import net.youapps.translation_engines.Language
 import net.youapps.translation_engines.Translation
 import net.youapps.translation_engines.TranslationEngine
-import java.io.File
-import java.text.BreakIterator
 
 private const val TAG = "TranslateGemma"
 
@@ -486,28 +486,32 @@ class TranslateGemmaEngine(
     private fun buildStructuredTextMessage(text: String, source: String, target: String): JsonObject =
         JsonObject().apply {
             addProperty("role", "user")
-            add("content", JsonArray().apply {
-                add(JsonObject().apply {
+            val content = JsonArray()
+            content.add(
+                JsonObject().apply {
                     addProperty("type", "text")
                     addProperty("source_lang_code", source)
                     addProperty("target_lang_code", target.replace('_', '-'))
                     addProperty("text", text)
-                })
-            })
+                }
+            )
+            add("content", content)
         }
 
     private fun buildStructuredImageMessage(imageFile: File, source: String, target: String): JsonObject =
         JsonObject().apply {
             addProperty("role", "user")
-            add("content", JsonArray().apply {
-                add(JsonObject().apply {
+            val content = JsonArray()
+            content.add(
+                JsonObject().apply {
                     addProperty("type", "image")
                     addProperty("path", imageFile.absolutePath)
                     addProperty("image", imageFile.absolutePath)
                     addProperty("source_lang_code", source)
                     addProperty("target_lang_code", target.replace('_', '-'))
-                })
-            })
+                }
+            )
+            add("content", content)
         }
 
     private fun sendStructuredMessage(conversation: AutoCloseable, message: JsonObject): String {
